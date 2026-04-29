@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ViperTab — Apple Glass new tab page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A macOS-inspired new tab page for Chrome, Edge, Brave, and Arc. Apple Glass UI, 16 customizable widgets, Spotlight search.">
+    <meta property="og:title" content="ViperTab">
+    <meta property="og:description" content="Apple Glass new tab page with 16 customizable widgets.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/ViperShard/ViperTab/main/icons/vipershard-logo.png">
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/ViperShard/ViperTab/main/icons/favicon.png">
+    <style>
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            color: rgba(255,255,255,0.96);
+            background:
+                radial-gradient(at 20% 20%, #5b6bd6 0%, transparent 50%),
+                radial-gradient(at 80% 0%, #b85ea8 0%, transparent 55%),
+                radial-gradient(at 100% 80%, #ff8a5b 0%, transparent 50%),
+                radial-gradient(at 0% 100%, #3a4ea8 0%, transparent 60%),
+                linear-gradient(135deg, #2a3878 0%, #6d3a8e 50%, #c84a78 100%);
+            background-attachment: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 720px;
+            width: 100%;
+            text-align: center;
+            background: rgba(255,255,255,0.18);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 28px;
+            padding: 50px 40px;
+            box-shadow: 0 18px 50px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.28);
+        }
+        .logo {
+            width: 200px;
+            max-width: 60%;
+            margin: 0 auto 20px;
+            display: block;
+            filter: drop-shadow(0 6px 18px rgba(0,0,0,0.4));
+        }
+        h1 {
+            font-weight: 200;
+            font-size: 52px;
+            margin: 0 0 8px;
+            letter-spacing: -1.5px;
+        }
+        .tagline {
+            color: rgba(255,255,255,0.78);
+            font-size: 17px;
+            margin: 0 0 36px;
+            line-height: 1.55;
+        }
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 36px;
+            background: rgba(255,255,255,0.28);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 14px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 17px;
+            font-weight: 500;
+            transition: transform 0.18s, background 0.18s;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+        .download-btn:hover {
+            background: rgba(255,255,255,0.42);
+            transform: translateY(-2px);
+        }
+        .meta {
+            color: rgba(255,255,255,0.6);
+            font-size: 13px;
+            margin-top: 14px;
+            font-variant-numeric: tabular-nums;
+        }
+        .meta a { color: inherit; }
+        .install-steps {
+            margin-top: 44px;
+            text-align: left;
+            background: rgba(0,0,0,0.18);
+            border-radius: 14px;
+            padding: 22px 28px;
+            font-size: 14px;
+            line-height: 1.65;
+        }
+        .install-steps h2 {
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            opacity: 0.7;
+            margin: 0 0 10px;
+            font-weight: 600;
+        }
+        .install-steps ol { margin: 0; padding-left: 20px; }
+        .install-steps li { padding: 2px 0; }
+        .install-steps code {
+            background: rgba(255,255,255,0.15);
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-size: 12.5px;
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 24px;
+            text-align: left;
+            font-size: 13px;
+        }
+        .feature {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 12px 14px;
+        }
+        .feature strong { display: block; margin-bottom: 2px; font-weight: 600; }
+        .feature span { color: rgba(255,255,255,0.7); }
+        .footer-links {
+            margin-top: 32px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+        }
+        .footer-links a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .footer-links a:hover { color: #fff; text-decoration: underline; }
+        @media (max-width: 600px) {
+            .container { padding: 36px 22px; }
+            h1 { font-size: 38px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://raw.githubusercontent.com/ViperShard/ViperTab/main/icons/vipershard-logo.png" alt="ViperShard" class="logo">
+        <h1>ViperTab</h1>
+        <p class="tagline">A macOS-inspired new tab page for Chrome.<br>Apple Glass UI, 16 customizable widgets, Spotlight search.</p>
+
+        <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip" class="download-btn">
+            <span>⬇</span><span>Download Latest</span>
+        </a>
+        <div class="meta">v<span id="version">…</span> · <a href="https://github.com/ViperShard/ViperTab/releases">all versions</a></div>
+
+        <div class="install-steps">
+            <h2>Install in 30 seconds</h2>
+            <ol>
+                <li>Download and unzip.</li>
+                <li>Open <code>chrome://extensions</code></li>
+                <li>Toggle <strong>Developer mode</strong> on (top right).</li>
+                <li>Click <strong>Load unpacked</strong> → pick the unzipped folder.</li>
+                <li>Open a new tab. ✨</li>
+            </ol>
+        </div>
+
+        <div class="features">
+            <div class="feature"><strong>16 widgets</strong><span>Clock, weather, status, notes, calculator, world clocks, recently closed, sound visualizer, pomodoro, to-do, crypto, quote, stopwatch, dice, search, picture of the day.</span></div>
+            <div class="feature"><strong>Apple Glass UI</strong><span>Translucent menu bar, glass widgets, magnifying dock, Spotlight search.</span></div>
+            <div class="feature"><strong>Themes &amp; wallpapers</strong><span>Glass / Light / OLED themes plus 12 built-in wallpapers — or upload your own.</span></div>
+            <div class="feature"><strong>Auto-update banner</strong><span>Get notified the moment a new version drops.</span></div>
+        </div>
+
+        <div class="footer-links">
+            <a href="https://github.com/ViperShard/ViperTab">GitHub</a>
+            ·
+            <a href="https://github.com/ViperShard/ViperTab/releases">Releases</a>
+            ·
+            <a href="https://github.com/ViperShard/ViperTab/issues">Report issue</a>
+        </div>
+    </div>
+
+    <script>
+        // Always show the latest version from version.json
+        fetch('https://raw.githubusercontent.com/ViperShard/ViperTab/main/version.json?t=' + Date.now())
+            .then(r => r.json())
+            .then(d => { document.getElementById('version').textContent = d.version; })
+            .catch(() => { document.getElementById('version').textContent = '—'; });
+    </script>
+</body>
+</html>

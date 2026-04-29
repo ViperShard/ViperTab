@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="glass">
+<head>
+    <meta charset="UTF-8">
+    <title>New Tab</title>
+    <link rel="icon" type="image/png" href="icons/favicon.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="wallpaper" id="wallpaper"></div>
+
+    <header class="menu-bar">
+        <div class="menu-left">
+            <button class="menu-item apple-btn" id="apple-btn" title="ViperShard">
+                <img src="icons/vipershard-logo.png" class="brand-logo" alt="ViperShard">
+            </button>
+            <button class="menu-item bold" id="brand-btn">ViperTab</button>
+            <button class="menu-item" data-menu="view">View</button>
+            <button class="menu-item" data-menu="help">Help</button>
+        </div>
+        <div class="menu-right">
+            <button class="menu-icon" id="search-btn" title="Spotlight (press /)">
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                    <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M10 4a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm0 0v0m4.5 10.5L20 20"/>
+                </svg>
+            </button>
+            <button class="menu-icon" id="control-btn" title="Control Center">
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                    <rect x="3" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                    <rect x="13" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                    <rect x="3" y="13" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                    <rect x="13" y="13" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                </svg>
+            </button>
+            <span class="menu-clock" id="menu-clock">—</span>
+        </div>
+    </header>
+
+    <div class="dropdown-menu" id="menu-view" hidden>
+        <button class="menu-row" data-action="theme-cycle"><span>Cycle Theme</span><span class="kbd" id="theme-current">Glass</span></button>
+        <button class="menu-row" data-action="time-toggle"><span>Toggle 12 / 24-Hour</span><span class="kbd" id="time-current">24h</span></button>
+        <button class="menu-row" data-action="temp-toggle"><span>Toggle °F / °C</span><span class="kbd" id="temp-current">°F</span></button>
+        <div class="menu-sep"></div>
+        <button class="menu-row" data-action="widgets"><span>Edit Widgets…</span></button>
+        <button class="menu-row" data-action="visualizer-toggle"><span>Toggle Sound Visualizer</span></button>
+        <button class="menu-row" data-action="reset-wallpaper"><span>Reset Wallpaper</span></button>
+        <div class="menu-sep"></div>
+        <button class="menu-row" data-action="settings-open"><span>Control Center…</span></button>
+    </div>
+
+    <div class="dropdown-menu" id="menu-help" hidden>
+        <button class="menu-row" data-action="shortcuts"><span>Keyboard Shortcuts</span><span class="kbd">/</span></button>
+        <button class="menu-row" data-action="spotlight"><span>Open Spotlight</span><span class="kbd">⌘K</span></button>
+        <div class="menu-sep"></div>
+        <button class="menu-row" data-action="tips"><span>Tips & Features</span></button>
+        <button class="menu-row" data-action="about"><span>About ViperTab</span></button>
+    </div>
+
+    <div class="overlay info-overlay" id="info-modal" hidden>
+        <div class="info-box">
+            <div class="info-header">
+                <span id="info-title">Title</span>
+                <button class="info-close" id="info-close" title="Close">×</button>
+            </div>
+            <div class="info-body" id="info-body"></div>
+        </div>
+    </div>
+
+    <div class="update-banner" id="update-banner" hidden>
+        <span class="badge">Update</span>
+        <span class="upd-msg">A new version is available</span>
+        <span class="upd-version">v—</span>
+        <a class="upd-link" href="#" target="_blank" rel="noopener noreferrer">Download →</a>
+        <button class="upd-close" title="Dismiss">×</button>
+    </div>
+
+    <main class="desktop">
+        <div class="widget-grid">
+            <section class="widget" data-slot="slot1"></section>
+            <section class="widget" data-slot="slot2"></section>
+            <section class="widget" data-slot="slot3"></section>
+            <section class="widget" data-slot="slot4"></section>
+            <section class="widget" data-slot="slot5"></section>
+            <section class="widget" data-slot="slot6"></section>
+            <section class="widget" data-slot="slot7"></section>
+            <section class="widget" data-slot="slot8"></section>
+        </div>
+    </main>
+
+    <nav class="dock" id="dock"></nav>
+
+    <div class="overlay spotlight-overlay" id="spotlight" hidden>
+        <div class="spotlight-box">
+            <input type="text" id="spotlight-input" placeholder="Spotlight Search" autocomplete="off" spellcheck="false">
+            <ul id="spotlight-results"></ul>
+        </div>
+    </div>
+
+    <div class="overlay settings-overlay" id="settings" hidden>
+        <div class="settings-box">
+            <div class="settings-header">
+                <img src="icons/vipershard-logo.png" class="settings-logo" alt="">
+                <span>Control Center</span>
+            </div>
+
+            <div class="setting-row">
+                <label>Widgets</label>
+                <div class="widget-picker" id="widget-picker"></div>
+                <div class="row-actions" style="margin-top:8px;">
+                    <button id="layout-reset">Reset Default Layout</button>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <label>Theme</label>
+                <div class="seg-toggle" id="theme-toggle">
+                    <button data-theme="glass">Glass</button>
+                    <button data-theme="light">Light</button>
+                    <button data-theme="oled">OLED</button>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <label>Wallpaper</label>
+                <div class="wallpaper-grid" id="wallpaper-grid"></div>
+                <div class="row-actions" style="margin-top:8px;">
+                    <button id="wallpaper-upload-btn">Upload Image</button>
+                </div>
+                <input type="file" id="wallpaper-file" accept="image/*" hidden>
+            </div>
+
+            <div class="setting-row">
+                <label>Dock Items</label>
+                <ul id="dock-editor"></ul>
+                <button id="dock-add" class="add-btn">+ Add Item</button>
+            </div>
+
+            <div class="setting-row">
+                <label>Time Format</label>
+                <div class="seg-toggle" id="time-format">
+                    <button data-fmt="24">24h</button>
+                    <button data-fmt="12">12h</button>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <label>Temperature Unit</label>
+                <div class="seg-toggle" id="temp-unit">
+                    <button data-unit="fahrenheit">°F</button>
+                    <button data-unit="celsius">°C</button>
+                </div>
+            </div>
+
+            <div class="settings-footer">
+                <span>ViperTab v1.2.0</span>
+                <span class="hint">Press <kbd>/</kbd> for Spotlight</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

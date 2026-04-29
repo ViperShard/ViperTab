@@ -1,0 +1,9 @@
+# Build artifact — distributed via GitHub Releases, not committed
+ViperTab.zip
+
+# Editor / OS noise
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
