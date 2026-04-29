@@ -4,192 +4,511 @@
     <meta charset="UTF-8">
     <title>ViperTab — Apple Glass new tab page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="A macOS-inspired new tab page for Chrome, Edge, Brave, and Arc. Apple Glass UI, 16 customizable widgets, Spotlight search.">
+    <meta name="description" content="A macOS-inspired new tab page for Chrome. Apple Glass UI, 16 customizable widgets, Spotlight search.">
     <meta property="og:title" content="ViperTab">
     <meta property="og:description" content="Apple Glass new tab page with 16 customizable widgets.">
     <meta property="og:image" content="https://raw.githubusercontent.com/ViperShard/ViperTab/main/icons/vipershard-logo.png">
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/ViperShard/ViperTab/main/icons/favicon.png">
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #08080f;
+            --bg-2: #0d0d18;
+            --text: rgba(255, 255, 255, 0.96);
+            --text-dim: rgba(255, 255, 255, 0.62);
+            --text-faint: rgba(255, 255, 255, 0.38);
+            --line: rgba(255, 255, 255, 0.08);
+            --line-bright: rgba(255, 255, 255, 0.16);
+            --glass: rgba(255, 255, 255, 0.04);
+            --gold: #c9a36b;
+            --gold-soft: rgba(201, 163, 107, 0.1);
+            --gold-bright: #e0bc8a;
+        }
+
         html, body { height: 100%; }
         body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", system-ui, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             -webkit-font-smoothing: antialiased;
-            color: rgba(255,255,255,0.96);
-            background:
-                radial-gradient(at 20% 20%, #5b6bd6 0%, transparent 50%),
-                radial-gradient(at 80% 0%, #b85ea8 0%, transparent 55%),
-                radial-gradient(at 100% 80%, #ff8a5b 0%, transparent 50%),
-                radial-gradient(at 0% 100%, #3a4ea8 0%, transparent 60%),
-                linear-gradient(135deg, #2a3878 0%, #6d3a8e 50%, #c84a78 100%);
-            background-attachment: fixed;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        /* === Nav === */
+        .nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 18px 36px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(8, 8, 15, 0.6);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-bottom: 1px solid var(--line);
+        }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+        }
+        .nav-brand img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+        }
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            font-size: 13.5px;
+            color: var(--text-dim);
+        }
+        .nav-links a { transition: color 0.15s; }
+        .nav-links a:hover { color: var(--text); }
+
+        /* === Hero === */
+        .hero {
+            position: relative;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 40px 20px;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 720px;
-            width: 100%;
             text-align: center;
-            background: rgba(255,255,255,0.18);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.35);
-            border-radius: 28px;
-            padding: 50px 40px;
-            box-shadow: 0 18px 50px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.28);
+            padding: 140px 32px 100px;
+            overflow: hidden;
         }
-        .logo {
-            width: 200px;
-            max-width: 60%;
-            margin: 0 auto 20px;
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: -10% -10% auto -10%;
+            height: 80%;
+            background:
+                radial-gradient(ellipse 70% 60% at 50% 20%, rgba(184, 94, 168, 0.22), transparent 60%),
+                radial-gradient(ellipse 60% 50% at 25% 30%, rgba(91, 107, 214, 0.18), transparent 60%),
+                radial-gradient(ellipse 60% 50% at 75% 40%, rgba(255, 138, 91, 0.14), transparent 65%);
+            z-index: -1;
+            pointer-events: none;
+            filter: blur(20px);
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: 50% 0 0 0;
+            background: linear-gradient(180deg, transparent, var(--bg) 80%);
+            z-index: -1;
+        }
+        .hero-content { max-width: 760px; }
+        .hero-logo {
+            width: 168px;
+            max-width: 38vw;
+            margin: 0 auto 42px;
             display: block;
-            filter: drop-shadow(0 6px 18px rgba(0,0,0,0.4));
+            filter: drop-shadow(0 14px 36px rgba(201, 163, 107, 0.25));
         }
-        h1 {
+        .hero h1 {
+            font-size: clamp(52px, 9vw, 104px);
             font-weight: 200;
-            font-size: 52px;
-            margin: 0 0 8px;
-            letter-spacing: -1.5px;
+            letter-spacing: -3.5px;
+            line-height: 0.95;
+            margin-bottom: 22px;
         }
-        .tagline {
-            color: rgba(255,255,255,0.78);
-            font-size: 17px;
-            margin: 0 0 36px;
+        .hero-tagline {
+            font-size: clamp(17px, 2.2vw, 21px);
+            color: var(--text-dim);
+            max-width: 540px;
+            margin: 0 auto 48px;
             line-height: 1.55;
+            font-weight: 300;
         }
-        .download-btn {
+        .cta {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            padding: 14px 36px;
-            background: rgba(255,255,255,0.28);
-            border: 1px solid rgba(255,255,255,0.4);
-            border-radius: 14px;
-            color: #fff;
-            text-decoration: none;
-            font-size: 17px;
-            font-weight: 500;
-            transition: transform 0.18s, background 0.18s;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 22px;
         }
-        .download-btn:hover {
-            background: rgba(255,255,255,0.42);
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 13px 28px;
+            border-radius: 11px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: transform 0.18s, background 0.18s, border-color 0.18s;
+            border: 1px solid transparent;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: var(--gold);
+            color: #1a1408;
+        }
+        .btn-primary:hover {
+            background: var(--gold-bright);
             transform: translateY(-2px);
         }
-        .meta {
-            color: rgba(255,255,255,0.6);
+        .btn-ghost {
+            background: transparent;
+            border-color: var(--line-bright);
+            color: var(--text);
+        }
+        .btn-ghost:hover {
+            border-color: rgba(255, 255, 255, 0.32);
+            background: var(--glass);
+        }
+        .hero-meta {
             font-size: 13px;
-            margin-top: 14px;
-            font-variant-numeric: tabular-nums;
+            color: var(--text-faint);
+            letter-spacing: 0.3px;
         }
-        .meta a { color: inherit; }
-        .install-steps {
-            margin-top: 44px;
-            text-align: left;
-            background: rgba(0,0,0,0.18);
-            border-radius: 14px;
-            padding: 22px 28px;
-            font-size: 14px;
-            line-height: 1.65;
+        .hero-meta a {
+            color: inherit;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 1px;
         }
-        .install-steps h2 {
+        .hero-meta a:hover { color: var(--text-dim); }
+
+        /* === Sections === */
+        section.body {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 120px 36px;
+        }
+        .section-eyebrow {
             font-size: 11.5px;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
-            opacity: 0.7;
-            margin: 0 0 10px;
+            letter-spacing: 2.5px;
+            color: var(--gold);
+            margin-bottom: 22px;
             font-weight: 600;
         }
-        .install-steps ol { margin: 0; padding-left: 20px; }
-        .install-steps li { padding: 2px 0; }
-        .install-steps code {
-            background: rgba(255,255,255,0.15);
-            padding: 1px 7px;
-            border-radius: 4px;
-            font-size: 12.5px;
-            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        .section-title {
+            font-size: clamp(34px, 4.4vw, 52px);
+            font-weight: 300;
+            letter-spacing: -1.2px;
+            line-height: 1.08;
+            margin-bottom: 22px;
+            max-width: 720px;
         }
+        .section-lede {
+            font-size: 18px;
+            color: var(--text-dim);
+            max-width: 560px;
+            line-height: 1.65;
+            margin-bottom: 72px;
+            font-weight: 300;
+        }
+
+        /* === Features (editorial two-col) === */
         .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-top: 24px;
-            text-align: left;
-            font-size: 13px;
+            border-top: 1px solid var(--line);
         }
         .feature {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 10px;
-            padding: 12px 14px;
+            padding: 44px 0;
+            border-bottom: 1px solid var(--line);
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 60px;
+            align-items: baseline;
         }
-        .feature strong { display: block; margin-bottom: 2px; font-weight: 600; }
-        .feature span { color: rgba(255,255,255,0.7); }
-        .footer-links {
-            margin-top: 32px;
+        .feature-num {
+            font-size: 12.5px;
+            color: var(--gold);
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+        .feature h3 {
+            font-size: 19px;
+            font-weight: 500;
+            margin-top: 4px;
+            letter-spacing: -0.3px;
+        }
+        .feature p {
+            font-size: 15.5px;
+            color: var(--text-dim);
+            line-height: 1.65;
+            max-width: 580px;
+        }
+        .feature p code {
+            background: var(--glass);
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            font-size: 13.5px;
+            color: var(--text);
+        }
+        @media (max-width: 720px) {
+            .feature {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                padding: 32px 0;
+            }
+        }
+
+        /* === Install grid === */
+        .install-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0;
+        }
+        .step {
+            padding: 32px 28px 32px 0;
+            border-top: 1px solid var(--line);
+        }
+        .step:not(:last-child) { padding-right: 28px; }
+        .step-num {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 16px;
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            letter-spacing: 1px;
+        }
+        .step h4 {
+            font-size: 17px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            letter-spacing: -0.2px;
+        }
+        .step p {
+            font-size: 14.5px;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+        .step code, .step a {
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
             font-size: 13px;
-            color: rgba(255,255,255,0.6);
+            color: var(--text);
         }
-        .footer-links a {
-            color: rgba(255,255,255,0.85);
-            text-decoration: none;
-            margin: 0 10px;
+        .step code {
+            background: var(--glass);
+            padding: 1px 7px;
+            border-radius: 4px;
         }
-        .footer-links a:hover { color: #fff; text-decoration: underline; }
-        @media (max-width: 600px) {
-            .container { padding: 36px 22px; }
-            h1 { font-size: 38px; }
+        .step a {
+            color: var(--gold);
+            border-bottom: 1px solid var(--gold-soft);
+            font-family: inherit;
+            font-size: inherit;
+        }
+        .step a:hover { color: var(--gold-bright); }
+
+        /* === CTA banner === */
+        .cta-band {
+            margin: 0 auto;
+            max-width: 1080px;
+            padding: 80px 36px;
+            text-align: center;
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+        }
+        .cta-band h2 {
+            font-size: clamp(28px, 3.6vw, 40px);
+            font-weight: 300;
+            letter-spacing: -0.8px;
+            margin-bottom: 22px;
+        }
+
+        /* === Footer === */
+        footer {
+            padding: 48px 36px 60px;
+        }
+        .footer-content {
+            max-width: 1080px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 18px;
+        }
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+        .footer-brand img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+        }
+        .footer-links-list {
+            display: flex;
+            gap: 26px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+        .footer-links-list a { transition: color 0.15s; }
+        .footer-links-list a:hover { color: var(--text); }
+
+        @media (max-width: 720px) {
+            .nav { padding: 14px 22px; }
+            .nav-links { gap: 18px; font-size: 13px; }
+            .hero { padding: 110px 22px 70px; }
+            section.body { padding: 80px 22px; }
+            .cta-band { padding: 60px 22px; }
+            .step { padding-right: 0; padding-bottom: 28px; }
+            footer { padding: 36px 22px 44px; }
+            .footer-content { flex-direction: column; gap: 12px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <img src="https://raw.githubusercontent.com/ViperShard/ViperTab/main/icons/vipershard-logo.png" alt="ViperShard" class="logo">
-        <h1>ViperTab</h1>
-        <p class="tagline">A macOS-inspired new tab page for Chrome.<br>Apple Glass UI, 16 customizable widgets, Spotlight search.</p>
-
-        <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip" class="download-btn">
-            <span>⬇</span><span>Download Latest</span>
+    <nav class="nav">
+        <a class="nav-brand" href="#">
+            <img src="https://raw.githubusercontent.com/ViperShard/ViperTab/main/icons/vipershard-logo.png" alt="">
+            <span>ViperTab</span>
         </a>
-        <div class="meta">v<span id="version">…</span> · <a href="https://github.com/ViperShard/ViperTab/releases">all versions</a></div>
-
-        <div class="install-steps">
-            <h2>Install in 30 seconds</h2>
-            <ol>
-                <li>Download and unzip.</li>
-                <li>Open <code>chrome://extensions</code></li>
-                <li>Toggle <strong>Developer mode</strong> on (top right).</li>
-                <li>Click <strong>Load unpacked</strong> → pick the unzipped folder.</li>
-                <li>Open a new tab. ✨</li>
-            </ol>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#install">Install</a>
+            <a href="https://github.com/ViperShard/ViperTab">GitHub</a>
+            <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip">Download</a>
         </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <img src="https://raw.githubusercontent.com/ViperShard/ViperTab/main/icons/vipershard-logo.png" class="hero-logo" alt="ViperShard">
+            <h1>ViperTab</h1>
+            <p class="hero-tagline">Apple Glass for your new tab. 16 customizable widgets, a real dock, and Spotlight — every blank tab becomes a desktop you actually want to look at.</p>
+            <div class="cta">
+                <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip" class="btn btn-primary">
+                    <span>↓</span><span>Download for Chrome</span>
+                </a>
+                <a href="https://github.com/ViperShard/ViperTab" class="btn btn-ghost">View source</a>
+            </div>
+            <div class="hero-meta">
+                v<span id="version">…</span> &nbsp;·&nbsp; Free &nbsp;·&nbsp; Chrome · Edge · Brave · Arc &nbsp;·&nbsp;
+                <a href="https://github.com/ViperShard/ViperTab/releases">all versions</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="body" id="features">
+        <div class="section-eyebrow">Features</div>
+        <h2 class="section-title">A new tab page that earns the screen.</h2>
+        <p class="section-lede">Every surface is real glass — translucent, blurred, layered over a wallpaper you choose. No more empty Google homepage every time you open a tab.</p>
 
         <div class="features">
-            <div class="feature"><strong>16 widgets</strong><span>Clock, weather, status, notes, calculator, world clocks, recently closed, sound visualizer, pomodoro, to-do, crypto, quote, stopwatch, dice, search, picture of the day.</span></div>
-            <div class="feature"><strong>Apple Glass UI</strong><span>Translucent menu bar, glass widgets, magnifying dock, Spotlight search.</span></div>
-            <div class="feature"><strong>Themes &amp; wallpapers</strong><span>Glass / Light / OLED themes plus 12 built-in wallpapers — or upload your own.</span></div>
-            <div class="feature"><strong>Auto-update banner</strong><span>Get notified the moment a new version drops.</span></div>
+            <div class="feature">
+                <div>
+                    <div class="feature-num">01</div>
+                    <h3>16 widgets, fully swappable</h3>
+                </div>
+                <p>Clock, weather, status, notes, calculator, world clocks, recently closed, sound visualizer, pomodoro, to-do, crypto, quote, stopwatch, dice, search, picture of the day. Open Control Center and swap any slot from a dropdown — settings persist across reloads.</p>
+            </div>
+            <div class="feature">
+                <div>
+                    <div class="feature-num">02</div>
+                    <h3>Spotlight that searches everything</h3>
+                </div>
+                <p>Press <code>/</code> to search the web, your bookmarks, your open tabs, and quick actions in one panel. Same shortcuts as macOS — including <code>⌘ K</code> and <code>↑ ↓ Enter</code> navigation.</p>
+            </div>
+            <div class="feature">
+                <div>
+                    <div class="feature-num">03</div>
+                    <h3>Themes &amp; wallpapers</h3>
+                </div>
+                <p>Glass, Light, and OLED themes pair with twelve built-in wallpapers — or upload your own. Every form control, dock item, and overlay follows the active theme.</p>
+            </div>
+            <div class="feature">
+                <div>
+                    <div class="feature-num">04</div>
+                    <h3>Real browser-audio visualizer</h3>
+                </div>
+                <p>Capture audio from any tab — YouTube, Spotify, Apple Music — and watch it pulse in bars, mirror, wave, or radial form. Six color palettes baked in.</p>
+            </div>
+            <div class="feature">
+                <div>
+                    <div class="feature-num">05</div>
+                    <h3>Dock with live favicons</h3>
+                </div>
+                <p>Add any URL and the icon is fetched automatically. Optional manual override via emoji or image URL. Hover-magnified, just like the real thing.</p>
+            </div>
+            <div class="feature">
+                <div>
+                    <div class="feature-num">06</div>
+                    <h3>Auto-update banner</h3>
+                </div>
+                <p>The extension polls this site for new versions on every tab. When one drops, a quiet banner appears at the top with a one-click download — no surprise reloads, no telemetry.</p>
+            </div>
         </div>
+    </section>
 
-        <div class="footer-links">
-            <a href="https://github.com/ViperShard/ViperTab">GitHub</a>
-            ·
-            <a href="https://github.com/ViperShard/ViperTab/releases">Releases</a>
-            ·
-            <a href="https://github.com/ViperShard/ViperTab/issues">Report issue</a>
+    <section class="body" id="install">
+        <div class="section-eyebrow">Install</div>
+        <h2 class="section-title">Loaded in thirty seconds.</h2>
+        <p class="section-lede">No build step, no node, no command line. Chrome's <em>Load unpacked</em> is the only step.</p>
+
+        <div class="install-grid">
+            <div class="step">
+                <div class="step-num">STEP 01</div>
+                <h4>Download &amp; unzip</h4>
+                <p>Grab the <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip">latest release</a> and unzip it anywhere on disk.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">STEP 02</div>
+                <h4>Open extensions</h4>
+                <p>Visit <code>chrome://extensions</code> in your browser.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">STEP 03</div>
+                <h4>Developer mode</h4>
+                <p>Toggle <strong>Developer mode</strong> on in the top-right corner.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">STEP 04</div>
+                <h4>Load unpacked</h4>
+                <p>Click <strong>Load unpacked</strong>, pick the unzipped folder, and open a new tab.</p>
+            </div>
         </div>
-    </div>
+    </section>
+
+    <section class="cta-band">
+        <h2>Ready to upgrade every blank tab?</h2>
+        <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip" class="btn btn-primary">
+            <span>↓</span><span>Download v<span id="version-2">…</span></span>
+        </a>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <img src="https://raw.githubusercontent.com/ViperShard/ViperTab/main/icons/vipershard-logo.png" alt="">
+                <span>ViperTab — part of the ViperShard family.</span>
+            </div>
+            <div class="footer-links-list">
+                <a href="https://github.com/ViperShard/ViperTab">GitHub</a>
+                <a href="https://github.com/ViperShard/ViperTab/issues">Issues</a>
+                <a href="https://github.com/ViperShard/ViperTab/releases">Releases</a>
+            </div>
+        </div>
+    </footer>
 
     <script>
-        // Always show the latest version from version.json
         fetch('https://raw.githubusercontent.com/ViperShard/ViperTab/main/version.json?t=' + Date.now())
             .then(r => r.json())
-            .then(d => { document.getElementById('version').textContent = d.version; })
-            .catch(() => { document.getElementById('version').textContent = '—'; });
+            .then(d => {
+                document.getElementById('version').textContent = d.version;
+                document.getElementById('version-2').textContent = d.version;
+            })
+            .catch(() => {
+                document.getElementById('version').textContent = '—';
+                document.getElementById('version-2').textContent = '—';
+            });
     </script>
 </body>
 </html>
