@@ -6,6 +6,8 @@
 
 A macOS-inspired new tab page for Chrome, Edge, Brave, and Arc — Apple Glass UI, helpful widgets, an editable dock, and a `/`-key Spotlight that searches the web, your bookmarks, and your open tabs. Part of the ViperShard family.
 
+**[→ Download &amp; install](https://vipershard.github.io/ViperTab/)** · [Latest release](https://github.com/ViperShard/ViperTab/releases/latest) · [All versions](https://github.com/ViperShard/ViperTab/releases)
+
 ## Features
 
 - **Menu bar** — translucent glass bar with date/time and quick-access buttons.
@@ -17,11 +19,12 @@ A macOS-inspired new tab page for Chrome, Edge, Brave, and Arc — Apple Glass U
 
 ## Install (Load Unpacked)
 
-1. Download or clone this folder.
-2. Open `chrome://extensions` (or `edge://extensions`, `brave://extensions`).
-3. Toggle **Developer mode** on (top right).
-4. Click **Load unpacked** and select this folder.
-5. Open a new tab — ViperTab takes over. ✨
+1. **Download** the latest `.zip` from <https://vipershard.github.io/ViperTab/> (or the [Releases page](https://github.com/ViperShard/ViperTab/releases)).
+2. Unzip anywhere.
+3. Open `chrome://extensions` (or `edge://extensions`, `brave://extensions`).
+4. Toggle **Developer mode** on (top right).
+5. Click **Load unpacked** and select the unzipped folder.
+6. Open a new tab — ViperTab takes over. ✨
 
 When the weather widget runs for the first time, the browser asks for location access. Allow it for live weather; deny it and the widget just stays blank.
 
