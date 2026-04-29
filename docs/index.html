@@ -115,10 +115,22 @@
         }
         .hero h1 {
             font-size: clamp(52px, 9vw, 104px);
-            font-weight: 200;
+            font-weight: 300;
             letter-spacing: -3.5px;
             line-height: 0.95;
             margin-bottom: 22px;
+            background: linear-gradient(135deg,
+                #f5deb3 0%,
+                #e8c891 18%,
+                #d4ad75 38%,
+                #c9a36b 55%,
+                #a87f4d 78%,
+                #d9b478 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 16px rgba(201, 163, 107, 0.22));
         }
         .hero-tagline {
             font-size: clamp(17px, 2.2vw, 21px);
