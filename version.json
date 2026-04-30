@@ -1,5 +1,5 @@
 {
-  "version": "1.4.0",
+  "version": "1.4.1",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Dev edition: real workspace. Multi-tab scratchpad code editor (Tab key indents, Shift-Tab outdents, autosave, double-click to rename), JWT decoder with expiration check, hash generator (SHA-1/256/384/512, click to copy), and line-by-line diff viewer. New default layout features the editor in the tall slot and diff in the wide slot.\n"
+  "notes": "Dev edition: terminal/btop aesthetic — solid panels, sharp 4px corners, bracketed widget headers, dot-grid background, monospace throughout, gold accent stays. Website: Versions section auto-fetches all GitHub releases with per-edition download links.\n"
 }
