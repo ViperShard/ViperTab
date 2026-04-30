@@ -1,5 +1,5 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.0",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "ViperTab Dev edition: separate zip with Hacker News, regex tester, JSON formatter, encoder/decoder, timestamps, and UUID generator. Modern dev aesthetic. Editions section added to download page.\n"
+  "notes": "Dev edition: real workspace. Multi-tab scratchpad code editor (Tab key indents, Shift-Tab outdents, autosave, double-click to rename), JWT decoder with expiration check, hash generator (SHA-1/256/384/512, click to copy), and line-by-line diff viewer. New default layout features the editor in the tall slot and diff in the wide slot.\n"
 }
