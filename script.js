@@ -51,6 +51,7 @@ const PREFS = {
     vizType: 'bars',
     vizPalette: IS_DEV_EDITION ? 'mono' : 'aurora',
     zenAccent: '#c9a36b',  // gold by default; user-customizable in zen edition
+    clockStyle: 'digital', // 'digital' | 'analog' — applies to all clock widgets
 };
 
 // Tiny pub-sub so widgets can react to global events (theme, prefs, viz toggle).
@@ -161,6 +162,85 @@ function domainOf(url) {
     try { return new URL(url).hostname; } catch { return ''; }
 }
 
+// ---------------------------------------------------------------------------
+// Clock rendering helpers (digital + analog) — used by the clock widget
+// ---------------------------------------------------------------------------
+function renderDigitalClock(container) {
+    const html = `
+        <div class="widget-time">—</div>
+        <div class="widget-date">—</div>`;
+    container.insertAdjacentHTML('beforeend', html);
+    const t = container.querySelector('.widget-time');
+    const d = container.querySelector('.widget-date');
+    const update = () => {
+        const now = new Date();
+        t.textContent = fmtTime(now);
+        d.textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    };
+    update();
+    const iv = setInterval(update, 1000);
+    return () => clearInterval(iv);
+}
+
+function renderAnalogClock(container) {
+    const NS = 'http://www.w3.org/2000/svg';
+    container.insertAdjacentHTML('beforeend', `
+        <svg viewBox="-100 -100 200 200" class="analog-clock" aria-label="Analog clock">
+            <g class="ac-marks"></g>
+            <line class="ac-hour" x1="0" y1="0" x2="0" y2="-52"/>
+            <line class="ac-min"  x1="0" y1="0" x2="0" y2="-78"/>
+            <line class="ac-sec"  x1="0" y1="0" x2="0" y2="-90"/>
+            <circle class="ac-pin"    cx="0" cy="0" r="5"/>
+            <circle class="ac-center" cx="0" cy="0" r="2.4"/>
+        </svg>
+        <div class="widget-date">—</div>`);
+
+    const marks = container.querySelector('.ac-marks');
+    for (let i = 0; i < 60; i++) {
+        const a = i * 6 * Math.PI / 180;
+        const isHour = i % 5 === 0;
+        const isCardinal = i % 15 === 0;
+        const r1 = isCardinal ? 76 : isHour ? 80 : 86;
+        const r2 = 92;
+        const line = document.createElementNS(NS, 'line');
+        line.setAttribute('x1', (Math.sin(a) * r1).toFixed(3));
+        line.setAttribute('y1', (-Math.cos(a) * r1).toFixed(3));
+        line.setAttribute('x2', (Math.sin(a) * r2).toFixed(3));
+        line.setAttribute('y2', (-Math.cos(a) * r2).toFixed(3));
+        line.setAttribute('class',
+            isCardinal ? 'ac-mark ac-mark-cardinal' :
+            isHour ? 'ac-mark ac-mark-hour' :
+            'ac-mark ac-mark-minute');
+        marks.appendChild(line);
+    }
+
+    const hourHand = container.querySelector('.ac-hour');
+    const minHand  = container.querySelector('.ac-min');
+    const secHand  = container.querySelector('.ac-sec');
+    const dateEl   = container.querySelector('.widget-date');
+
+    let raf = null;
+    let lastDateUpdate = 0;
+    const tick = () => {
+        const now = new Date();
+        const ms = now.getMilliseconds();
+        const seconds = now.getSeconds() + ms / 1000;
+        const minutes = now.getMinutes() + seconds / 60;
+        const hours = (now.getHours() % 12) + minutes / 60;
+        secHand.setAttribute('transform', `rotate(${(seconds * 6).toFixed(3)})`);
+        minHand.setAttribute('transform',  `rotate(${(minutes * 6).toFixed(3)})`);
+        hourHand.setAttribute('transform', `rotate(${(hours * 30).toFixed(3)})`);
+        const t = now.getTime();
+        if (t - lastDateUpdate > 60000 - ms) {
+            dateEl.textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            lastDateUpdate = t;
+        }
+        raf = requestAnimationFrame(tick);
+    };
+    tick();
+    return () => { if (raf) cancelAnimationFrame(raf); };
+}
+
 // Menu-bar clock (always present; not a swappable widget).
 function tickMenuClock() {
     const el = $('menu-clock');
@@ -188,20 +268,22 @@ const WIDGET_LIBRARY = {
         sizes: ['small', 'tall', 'wide'],
         render(container) {
             container.classList.add('clock-widget');
-            container.innerHTML = `
-                <div class="widget-time">—</div>
-                <div class="widget-date">—</div>`;
-            const t = container.querySelector('.widget-time');
-            const d = container.querySelector('.widget-date');
-            const update = () => {
-                const now = new Date();
-                t.textContent = fmtTime(now);
-                d.textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            let cleanup = null;
+            const build = () => {
+                if (cleanup) { cleanup(); cleanup = null; }
+                container.innerHTML = '';
+                cleanup = (PREFS.clockStyle === 'analog')
+                    ? renderAnalogClock(container)
+                    : renderDigitalClock(container);
             };
-            update();
-            const iv = setInterval(update, 1000);
-            const off = events.on('prefs', update);
-            return () => { clearInterval(iv); off(); container.classList.remove('clock-widget'); };
+            build();
+            const offStyle = events.on('clock-style', build);
+            const offPrefs = events.on('prefs', build);
+            return () => {
+                if (cleanup) cleanup();
+                offStyle(); offPrefs();
+                container.classList.remove('clock-widget');
+            };
         },
     },
     worldclocks: {
@@ -2600,6 +2682,7 @@ function syncSegToggles() {
     $('time-format')?.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.fmt === PREFS.timeFormat));
     $('temp-unit')?.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.unit === PREFS.tempUnit));
     $('theme-toggle')?.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.theme === PREFS.theme));
+    $('clock-style')?.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.style === PREFS.clockStyle));
 }
 
 function initSettings() {
@@ -2647,6 +2730,14 @@ function initSettings() {
         const t = e.target.dataset?.theme; if (!t) return;
         applyTheme(t);
         await setStored('vipertab.prefs', PREFS);
+    });
+
+    $('clock-style')?.addEventListener('click', async (e) => {
+        const s = e.target.dataset?.style; if (!s) return;
+        PREFS.clockStyle = s;
+        await setStored('vipertab.prefs', PREFS);
+        syncSegToggles();
+        events.emit('clock-style');
     });
 
     $('layout-reset').addEventListener('click', async () => {

@@ -846,6 +846,41 @@ button { cursor: pointer; }
 }
 .widget-date { font-size: 14px; color: var(--text-dim); margin-top: 10px; }
 
+/* Analog clock — smooth seconds hand, white face / gold accents */
+.analog-clock {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-width: 100%;
+    overflow: visible;
+    display: block;
+    margin: 0 auto;
+}
+.ac-mark { stroke: var(--text-dim); stroke-linecap: round; }
+.ac-mark-minute   { stroke-width: 0.8; opacity: 0.45; }
+.ac-mark-hour     { stroke: var(--text); stroke-width: 1.6; opacity: 0.7; }
+.ac-mark-cardinal { stroke: var(--accent, #c9a36b); stroke-width: 2.4; }
+.ac-hour { stroke: var(--text); stroke-width: 4;    stroke-linecap: round; }
+.ac-min  { stroke: var(--text); stroke-width: 2.4;  stroke-linecap: round; }
+.ac-sec  { stroke: var(--accent, #c9a36b); stroke-width: 1.2; stroke-linecap: round; }
+.ac-pin    { fill: var(--text); opacity: 0.92; }
+.ac-center { fill: var(--accent, #c9a36b); }
+
+/* Zen edition: huge centered analog clock */
+[data-edition="zen"] [data-slot="slot4"] .analog-clock {
+    width: min(80vh, 80vw, 720px);
+    height: min(80vh, 80vw, 720px);
+    max-width: none;
+    margin: 0 auto;
+}
+[data-edition="zen"] [data-slot="slot4"] .clock-widget {
+    align-items: center;
+    justify-content: center;
+}
+[data-edition="zen"] [data-slot="slot4"] .analog-clock + .widget-date {
+    margin-top: 28px;
+    text-align: center;
+}
+
 /* Weather */
 .weather-temp { font-size: 52px; font-weight: 200; line-height: 1; letter-spacing: -1.5px; }
 .weather-cond { font-size: 14px; color: var(--text-dim); margin-top: 6px; }
