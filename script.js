@@ -22,13 +22,17 @@ async function setStored(key, value) {
     return new Promise(res => SS.set({ [key]: value }, res));
 }
 
-// Edition detection — main `ViperTab`, `ViperTab Dev`, `ViperTab Student`
+// Edition detection — main `ViperTab`, `ViperTab Dev`, `ViperTab Student`, `ViperTab Zen`
 const EDITION_NAME = (typeof chrome !== 'undefined' && chrome.runtime?.getManifest?.()?.name) || 'ViperTab';
 const IS_DEV_EDITION = /\bdev\b/i.test(EDITION_NAME);
 const IS_STUDENT_EDITION = /\bstudent\b/i.test(EDITION_NAME);
-const EDITION_ID = IS_DEV_EDITION ? 'dev' : IS_STUDENT_EDITION ? 'student' : 'main';
-const ALL_EDITIONS = ['main', 'dev', 'student'];
-const EDITION_LABEL = { main: 'ViperTab', dev: 'ViperTab Dev', student: 'ViperTab Student' };
+const IS_ZEN_EDITION = /\bzen\b/i.test(EDITION_NAME);
+const EDITION_ID = IS_DEV_EDITION ? 'dev'
+    : IS_STUDENT_EDITION ? 'student'
+    : IS_ZEN_EDITION ? 'zen'
+    : 'main';
+const ALL_EDITIONS = ['main', 'dev', 'student', 'zen'];
+const EDITION_LABEL = { main: 'ViperTab', dev: 'ViperTab Dev', student: 'ViperTab Student', zen: 'ViperTab Zen' };
 if (typeof document !== 'undefined') {
     document.documentElement.setAttribute('data-edition', EDITION_ID);
 }
@@ -36,10 +40,17 @@ if (typeof document !== 'undefined') {
 const PREFS = {
     timeFormat: '24',
     tempUnit: 'fahrenheit',
-    theme: IS_DEV_EDITION ? 'dev' : IS_STUDENT_EDITION ? 'light' : 'glass',
-    wallpaperId: IS_DEV_EDITION ? 'mono-black' : IS_STUDENT_EDITION ? 'sunrise' : 'sequoia',
+    theme: IS_DEV_EDITION ? 'dev'
+         : IS_STUDENT_EDITION ? 'light'
+         : IS_ZEN_EDITION ? 'zen-dark'
+         : 'glass',
+    wallpaperId: IS_DEV_EDITION ? 'mono-black'
+               : IS_STUDENT_EDITION ? 'sunrise'
+               : IS_ZEN_EDITION ? 'mono-black'
+               : 'sequoia',
     vizType: 'bars',
     vizPalette: IS_DEV_EDITION ? 'mono' : 'aurora',
+    zenAccent: '#c9a36b',  // gold by default; user-customizable in zen edition
 };
 
 // Tiny pub-sub so widgets can react to global events (theme, prefs, viz toggle).
@@ -2231,9 +2242,25 @@ const DEFAULT_LAYOUT_STUDENT = {
     slot1: 'schoollinks', slot2: 'duedates', slot3: 'pomodoro', slot4: 'notebook',
     slot5: 'todo', slot6: 'gpa', slot7: 'citation', slot8: 'visualizer',
 };
+// Zen: only the clock slot and one optional secondary slot are rendered.
+// CSS reshapes the grid so the clock takes most of the screen and the secondary
+// sits below it.
+const DEFAULT_LAYOUT_ZEN = {
+    slot4: 'clock',
+    slot7: 'weather',
+};
 const DEFAULT_LAYOUT = IS_DEV_EDITION ? DEFAULT_LAYOUT_DEV
     : IS_STUDENT_EDITION ? DEFAULT_LAYOUT_STUDENT
+    : IS_ZEN_EDITION ? DEFAULT_LAYOUT_ZEN
     : DEFAULT_LAYOUT_MAIN;
+
+// Which slots actually render per edition (others stay empty + CSS-hidden)
+const ACTIVE_SLOTS = {
+    main:    ['slot1','slot2','slot3','slot4','slot5','slot6','slot7','slot8'],
+    dev:     ['slot1','slot2','slot3','slot4','slot5','slot6','slot7','slot8'],
+    student: ['slot1','slot2','slot3','slot4','slot5','slot6','slot7','slot8'],
+    zen:     ['slot4', 'slot7'],
+};
 
 const activeWidgets = {};   // slotId -> destroy fn
 
@@ -2260,8 +2287,19 @@ function renderSlot(slotId, widgetId) {
 
 async function renderLayout() {
     const layout = await getStored('vipertab.layout', DEFAULT_LAYOUT);
+    const active = ACTIVE_SLOTS[EDITION_ID] || SLOTS;
     SLOTS.forEach(slotId => {
-        const widgetId = layout[slotId] || DEFAULT_LAYOUT[slotId];
+        const container = document.querySelector(`[data-slot="${slotId}"]`);
+        if (!container) return;
+        if (!active.includes(slotId)) {
+            // Slot not active in this edition — don't render anything
+            if (activeWidgets[slotId]) { try { activeWidgets[slotId](); } catch {} delete activeWidgets[slotId]; }
+            container.innerHTML = '';
+            container.classList.add('slot-inactive');
+            return;
+        }
+        container.classList.remove('slot-inactive');
+        const widgetId = layout[slotId] || DEFAULT_LAYOUT[slotId] || DEFAULT_LAYOUT_MAIN[slotId];
         renderSlot(slotId, widgetId);
     });
 }
@@ -2616,6 +2654,30 @@ function initSettings() {
         renderLayout();
         renderWidgetPicker();
     });
+
+    // Zen-only: accent color picker
+    if (IS_ZEN_EDITION) {
+        const zenSettings = $('zen-settings');
+        if (zenSettings) zenSettings.hidden = false;
+        const picker = $('zen-accent');
+        const reset = $('zen-accent-reset');
+        if (picker) {
+            picker.value = PREFS.zenAccent || '#c9a36b';
+            picker.addEventListener('input', async (e) => {
+                PREFS.zenAccent = e.target.value;
+                applyZenAccent(PREFS.zenAccent);
+                await setStored('vipertab.prefs', PREFS);
+            });
+        }
+        if (reset) {
+            reset.addEventListener('click', async () => {
+                PREFS.zenAccent = '#c9a36b';
+                if (picker) picker.value = PREFS.zenAccent;
+                applyZenAccent(PREFS.zenAccent);
+                await setStored('vipertab.prefs', PREFS);
+            });
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -2898,7 +2960,35 @@ async function boot() {
     initMenuBar();
     initGlobalKeys();
 
+    if (IS_ZEN_EDITION) initZenChrome();
+    if (IS_ZEN_EDITION) applyZenAccent(PREFS.zenAccent);
+
     checkForUpdates();
+}
+
+// ---------------------------------------------------------------------------
+// Zen edition: auto-hiding chrome + accent color
+// ---------------------------------------------------------------------------
+function initZenChrome() {
+    let timer = null;
+    const html = document.documentElement;
+    const refresh = (e) => {
+        const showTop    = e.clientY < 50;
+        const showBottom = e.clientY > window.innerHeight - 80;
+        html.classList.toggle('zen-show-top', showTop);
+        html.classList.toggle('zen-show-bottom', showBottom);
+    };
+    document.addEventListener('mousemove', refresh);
+    // On boot show both for a few seconds so users know they exist
+    html.classList.add('zen-show-top', 'zen-show-bottom');
+    timer = setTimeout(() => {
+        html.classList.remove('zen-show-top', 'zen-show-bottom');
+    }, 3000);
+}
+
+function applyZenAccent(color) {
+    if (!color) return;
+    document.documentElement.style.setProperty('--zen-accent', color);
 }
 
 document.addEventListener('DOMContentLoaded', boot);

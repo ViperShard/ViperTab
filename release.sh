@@ -33,8 +33,9 @@ PAGE_URL="https://vipershard.github.io/ViperTab/"
 MAIN_ZIP_URL="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip"
 DEV_ZIP_URL="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip"
 STUDENT_ZIP_URL="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip"
+ZEN_ZIP_URL="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip"
 
-ALL_EDITIONS=(main dev student)
+ALL_EDITIONS=(main dev student zen)
 
 # Parse edition arg into an array
 declare -A BUMP_SET
@@ -123,6 +124,11 @@ cat > version.json <<EOF
       "version": "${NEW[student]}",
       "url": "$STUDENT_ZIP_URL",
       "notes": $notes_json
+    },
+    "zen": {
+      "version": "${NEW[zen]}",
+      "url": "$ZEN_ZIP_URL",
+      "notes": $notes_json
     }
   }
 }
@@ -165,6 +171,12 @@ build_zip_with_patched_manifest "ViperTabStudent.zip" \
     "ViperTab — Student edition. Markdown notebook with disk-save, school quick-links, due dates calendar, GPA calculator, citation generator, flashcards, and the rest of the home pack — built for high-school workflows." \
     "${NEW[student]}"
 
+# Zen
+build_zip_with_patched_manifest "ViperTabZen.zip" \
+    "ViperTab Zen" \
+    "ViperTab — Zen edition. A minimalist new tab page. Big centered digital clock, auto-hiding menu bar and dock, black/white/gold palette with a customizable accent color." \
+    "${NEW[zen]}"
+
 # ---------- 4. Determine git tag ----------
 bumped_count=${#BUMP_SET[@]}
 if [[ "$bumped_count" -eq ${#ALL_EDITIONS[@]} ]]; then
@@ -185,9 +197,9 @@ git tag "$tag"
 git push origin main
 git push origin "$tag"
 
-# ---------- 6. Create GitHub release with all 3 edition zips ----------
+# ---------- 6. Create GitHub release with all 4 edition zips ----------
 gh release create "$tag" \
-    ViperTab.zip ViperTabDev.zip ViperTabStudent.zip \
+    ViperTab.zip ViperTabDev.zip ViperTabStudent.zip ViperTabZen.zip \
     --title "$tag" --notes "$notes"
 
 echo ""
@@ -202,4 +214,5 @@ echo ""
 echo "  ViperTab:         $MAIN_ZIP_URL"
 echo "  ViperTab Dev:     $DEV_ZIP_URL"
 echo "  ViperTab Student: $STUDENT_ZIP_URL"
+echo "  ViperTab Zen:     $ZEN_ZIP_URL"
 echo "  Page:             $PAGE_URL"

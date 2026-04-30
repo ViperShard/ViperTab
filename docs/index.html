@@ -330,6 +330,11 @@
             background: rgba(180, 134, 224, 0.08);
             border-color: rgba(180, 134, 224, 0.22);
         }
+        .edition-tag-zen {
+            color: #e8c891;
+            background: rgba(232, 200, 145, 0.08);
+            border-color: rgba(232, 200, 145, 0.22);
+        }
         .edition h3 {
             font-size: 22px;
             font-weight: 400;
@@ -690,6 +695,21 @@
                         <a href="#legacy-student" class="edition-legacy">Older versions →</a>
                     </div>
                 </div>
+                <div class="edition">
+                    <div class="edition-header">
+                        <div class="edition-tag edition-tag-zen">Zen</div>
+                        <span class="edition-version" data-edition-version="zen">v—</span>
+                        <span class="edition-downloads" data-edition-downloads="zen">—</span>
+                    </div>
+                    <h3>ViperTab Zen</h3>
+                    <p>Minimal. One <strong>big centered digital clock</strong>, auto-hiding menu bar and dock, optional secondary widget below. Black / white / gold palette by default; pick any accent color. Spotlight (<code>/</code>) is your only UI — invisible until you summon it.</p>
+                    <div class="edition-actions">
+                        <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip" class="btn btn-primary edition-cta">
+                            <span>↓</span><span>Download</span>
+                        </a>
+                        <a href="#legacy-zen" class="edition-legacy">Older versions →</a>
+                    </div>
+                </div>
             </div>
 
             <div class="hero-meta">
@@ -809,6 +829,15 @@
             </div>
             <div class="version-list" data-edition-list="student"><div class="version-loading">Loading…</div></div>
         </div>
+
+        <div class="version-edition" id="legacy-zen">
+            <div class="version-edition-head">
+                <h3>ViperTab Zen</h3>
+                <span class="version-current" data-edition-version="zen">v—</span>
+                <span class="version-downloads" data-edition-downloads="zen">—</span>
+            </div>
+            <div class="version-list" data-edition-list="zen"><div class="version-loading">Loading…</div></div>
+        </div>
     </section>
 
     <section class="cta-band">
@@ -844,12 +873,14 @@
                 const main    = d.editions?.main?.version    || d.version || '—';
                 const dev     = d.editions?.dev?.version     || d.version || '—';
                 const student = d.editions?.student?.version || d.version || '—';
+                const zen     = d.editions?.zen?.version     || d.version || '—';
                 const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
                 setText('version', main);
                 setText('version-2', main);
                 document.querySelectorAll('[data-edition-version="main"]').forEach(el => el.textContent = 'v' + main);
                 document.querySelectorAll('[data-edition-version="dev"]').forEach(el => el.textContent = 'v' + dev);
                 document.querySelectorAll('[data-edition-version="student"]').forEach(el => el.textContent = 'v' + student);
+                document.querySelectorAll('[data-edition-version="zen"]').forEach(el => el.textContent = 'v' + zen);
             })
             .catch(() => {
                 ['version', 'version-2'].forEach(id => {
@@ -904,6 +935,7 @@
                     main:    { el: document.querySelector('[data-edition-list="main"]'),    asset: 'ViperTab.zip',         label: 'ViperTab',         seen: 0, downloads: 0 },
                     dev:     { el: document.querySelector('[data-edition-list="dev"]'),     asset: 'ViperTabDev.zip',      label: 'ViperTab Dev',     seen: 0, downloads: 0 },
                     student: { el: document.querySelector('[data-edition-list="student"]'), asset: 'ViperTabStudent.zip',  label: 'ViperTab Student', seen: 0, downloads: 0 },
+                    zen:     { el: document.querySelector('[data-edition-list="zen"]'),     asset: 'ViperTabZen.zip',      label: 'ViperTab Zen',     seen: 0, downloads: 0 },
                 };
                 Object.values(lists).forEach(L => L.el.innerHTML = '');
                 if (!Array.isArray(releases) || releases.length === 0) {
@@ -928,7 +960,7 @@
             })
             .catch(() => {
                 const errMsg = '<div class="version-error">Could not load releases. <a href="https://github.com/ViperShard/ViperTab/releases">View on GitHub</a></div>';
-                ['main', 'dev', 'student'].forEach(e => {
+                ['main', 'dev', 'student', 'zen'].forEach(e => {
                     const el = document.querySelector(`[data-edition-list="${e}"]`);
                     if (el) el.innerHTML = errMsg;
                 });
