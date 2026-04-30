@@ -1,5 +1,17 @@
 {
-  "version": "1.4.1",
+  "version": "1.4.2",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Dev edition: terminal/btop aesthetic — solid panels, sharp 4px corners, bracketed widget headers, dot-grid background, monospace throughout, gold accent stays. Website: Versions section auto-fetches all GitHub releases with per-edition download links.\n"
+  "notes": "Per-edition version tracking. Banner is now edition-aware: when your edition has an update it shows 'ViperTab[ Dev] vX.Y.Z available' (gold/green badge); when only the OTHER edition was bumped it shows an informational 'New ViperTab[ Dev] vX.Y.Z dropped — try it' (cyan badge). release.sh now accepts an optional edition arg (main/dev/both) for single-edition releases.\n",
+  "editions": {
+    "main": {
+      "version": "1.4.2",
+      "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
+      "notes": "Per-edition version tracking. Banner is now edition-aware: when your edition has an update it shows 'ViperTab[ Dev] vX.Y.Z available' (gold/green badge); when only the OTHER edition was bumped it shows an informational 'New ViperTab[ Dev] vX.Y.Z dropped — try it' (cyan badge). release.sh now accepts an optional edition arg (main/dev/both) for single-edition releases.\n"
+    },
+    "dev": {
+      "version": "1.4.2",
+      "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
+      "notes": "Per-edition version tracking. Banner is now edition-aware: when your edition has an update it shows 'ViperTab[ Dev] vX.Y.Z available' (gold/green badge); when only the OTHER edition was bumped it shows an informational 'New ViperTab[ Dev] vX.Y.Z dropped — try it' (cyan badge). release.sh now accepts an optional edition arg (main/dev/both) for single-edition releases.\n"
+    }
+  }
 }
