@@ -1,27 +1,27 @@
 {
-  "version": "1.4.4",
+  "version": "1.4.5",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Wallpaper presets (Sequoia, Aurora, Sunrise, Midnight, etc.) now actually apply in Zen — earlier CSS was forcing the wallpaper to solid black/white and overriding any preset picked from Control Center.\n",
+  "notes": "Banner system fixes: every banner now shows an edition-colored chip (DEFAULT green / DEV cyan / STUDENT purple / ZEN gold) so it's instantly clear which edition the update is for. Also fixed a logic bug that prevented secondary 'try the X edition' banners from firing across editions with independent version lines (Main on 1.4.x couldn't see Zen 1.0.x banners and vice versa).\n",
   "editions": {
     "main": {
-      "version": "1.4.4",
+      "version": "1.4.5",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Wallpaper presets (Sequoia, Aurora, Sunrise, Midnight, etc.) now actually apply in Zen — earlier CSS was forcing the wallpaper to solid black/white and overriding any preset picked from Control Center.\n"
+      "notes": "Banner system fixes: every banner now shows an edition-colored chip (DEFAULT green / DEV cyan / STUDENT purple / ZEN gold) so it's instantly clear which edition the update is for. Also fixed a logic bug that prevented secondary 'try the X edition' banners from firing across editions with independent version lines (Main on 1.4.x couldn't see Zen 1.0.x banners and vice versa).\n"
     },
     "dev": {
-      "version": "1.4.4",
+      "version": "1.4.5",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Wallpaper presets (Sequoia, Aurora, Sunrise, Midnight, etc.) now actually apply in Zen — earlier CSS was forcing the wallpaper to solid black/white and overriding any preset picked from Control Center.\n"
+      "notes": "Banner system fixes: every banner now shows an edition-colored chip (DEFAULT green / DEV cyan / STUDENT purple / ZEN gold) so it's instantly clear which edition the update is for. Also fixed a logic bug that prevented secondary 'try the X edition' banners from firing across editions with independent version lines (Main on 1.4.x couldn't see Zen 1.0.x banners and vice versa).\n"
     },
     "student": {
-      "version": "1.0.1",
+      "version": "1.0.2",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip",
-      "notes": "Wallpaper presets (Sequoia, Aurora, Sunrise, Midnight, etc.) now actually apply in Zen — earlier CSS was forcing the wallpaper to solid black/white and overriding any preset picked from Control Center.\n"
+      "notes": "Banner system fixes: every banner now shows an edition-colored chip (DEFAULT green / DEV cyan / STUDENT purple / ZEN gold) so it's instantly clear which edition the update is for. Also fixed a logic bug that prevented secondary 'try the X edition' banners from firing across editions with independent version lines (Main on 1.4.x couldn't see Zen 1.0.x banners and vice versa).\n"
     },
     "zen": {
-      "version": "1.0.1",
+      "version": "1.0.2",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip",
-      "notes": "Wallpaper presets (Sequoia, Aurora, Sunrise, Midnight, etc.) now actually apply in Zen — earlier CSS was forcing the wallpaper to solid black/white and overriding any preset picked from Control Center.\n"
+      "notes": "Banner system fixes: every banner now shows an edition-colored chip (DEFAULT green / DEV cyan / STUDENT purple / ZEN gold) so it's instantly clear which edition the update is for. Also fixed a logic bug that prevented secondary 'try the X edition' banners from firing across editions with independent version lines (Main on 1.4.x couldn't see Zen 1.0.x banners and vice versa).\n"
     }
   }
 }
