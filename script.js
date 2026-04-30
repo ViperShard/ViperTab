@@ -954,6 +954,7 @@ const WIDGET_LIBRARY = {
                             <option value="circle">Circle</option>
                         </select>
                         <select class="viz-select viz-palette" title="Palette">
+                            <option value="smart">Smart (from tab)</option>
                             <option value="aurora">Aurora</option>
                             <option value="ocean">Ocean</option>
                             <option value="fire">Fire</option>
@@ -979,6 +980,7 @@ const WIDGET_LIBRARY = {
             const PAUSE = 'M6 5h4v14H6zM14 5h4v14h-4z';
             let audioCtx = null, analyser = null, source = null, stream = null, raf = null;
             let running = false, freqData = null, timeData = null;
+            let smartTimer = null;
             typeSel.value = PREFS.vizType;
             palSel.value = PREFS.vizPalette;
             const ro = new ResizeObserver(() => {
@@ -1000,7 +1002,6 @@ const WIDGET_LIBRARY = {
                     stream.getTracks().forEach(t => t.stop());
                     stream = null; return;
                 }
-                stream.getVideoTracks().forEach(t => t.stop());
                 audioTracks[0].addEventListener('ended', stop);
                 const AC = window.AudioContext || window.webkitAudioContext;
                 audioCtx = new AC();
@@ -1011,6 +1012,18 @@ const WIDGET_LIBRARY = {
                 source.connect(analyser);
                 freqData = new Uint8Array(analyser.frequencyBinCount);
                 timeData = new Uint8Array(analyser.fftSize);
+
+                // Smart-palette sampling: keep the video track alive and feed
+                // it into a hidden <video> we read frames from every 600ms.
+                const videoTracks = stream.getVideoTracks();
+                if (videoTracks.length) {
+                    setupSmartVideo();
+                    smartVideoEl.srcObject = new MediaStream(videoTracks);
+                    smartVideoEl.muted = true;
+                    smartVideoEl.play().catch(() => {});
+                    smartTimer = setInterval(sampleSmartColors, 600);
+                }
+
                 running = true;
                 btn.classList.add('active');
                 iconPath.setAttribute('d', PAUSE);
@@ -1021,6 +1034,10 @@ const WIDGET_LIBRARY = {
                 running = false;
                 if (raf) cancelAnimationFrame(raf);
                 raf = null;
+                if (smartTimer) { clearInterval(smartTimer); smartTimer = null; }
+                if (smartVideoEl) { try { smartVideoEl.pause(); } catch {} smartVideoEl.srcObject = null; }
+                smartTarget = null;
+                smartCurrent = null;
                 if (stream) stream.getTracks().forEach(t => t.stop());
                 if (audioCtx && audioCtx.state !== 'closed') audioCtx.close();
                 stream = null; audioCtx = null; analyser = null; source = null;
@@ -1034,6 +1051,7 @@ const WIDGET_LIBRARY = {
                 if (!running || !analyser) return;
                 analyser.getByteFrequencyData(freqData);
                 analyser.getByteTimeDomainData(timeData);
+                if (PREFS.vizPalette === 'smart') updateSmartCurrent();
                 const r = canvas.getBoundingClientRect();
                 const W = r.width, H = r.height;
                 ctx.clearRect(0, 0, W, H);
@@ -2195,6 +2213,98 @@ const WIDGET_LIBRARY = {
 // ---------------------------------------------------------------------------
 // Visualizer drawing helpers (top-level, stateless)
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Smart palette — samples the captured tab's video frame and feeds dominant
+// colors into the visualizer. Module-scope state so PALETTES.smart can read it.
+// ---------------------------------------------------------------------------
+let smartVideoEl = null;
+let smartCanvas = null;
+let smartCtx = null;
+let smartTarget = null;   // [[h,s,l], ...] from latest sample
+let smartCurrent = null;  // smoothly-lerped toward target each draw frame
+
+function setupSmartVideo() {
+    if (smartVideoEl) return;
+    smartVideoEl = document.createElement('video');
+    smartVideoEl.muted = true;
+    smartVideoEl.playsInline = true;
+    smartVideoEl.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:160px;height:90px;pointer-events:none;';
+    document.body.appendChild(smartVideoEl);
+    smartCanvas = document.createElement('canvas');
+    smartCanvas.width = 80;
+    smartCanvas.height = 45;
+    smartCtx = smartCanvas.getContext('2d', { willReadFrequently: true });
+}
+
+function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s; const l = (max + min) / 2;
+    if (max === min) { h = 0; s = 0; }
+    else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if      (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (max === g) h = (b - r) / d + 2;
+        else                h = (r - g) / d + 4;
+        h *= 60;
+    }
+    return [h, s, l];
+}
+
+function lerpHue(a, b, t) {
+    const diff = ((b - a + 540) % 360) - 180;
+    return (a + diff * t + 360) % 360;
+}
+
+function extractDominantColors(rgba) {
+    const buckets = new Map();
+    for (let i = 0; i < rgba.length; i += 16) { // every 4th pixel
+        const r = rgba[i], g = rgba[i + 1], b = rgba[i + 2];
+        const [h, s, l] = rgbToHsl(r, g, b);
+        if (s < 0.18) continue;          // skip near-grays
+        if (l < 0.12 || l > 0.88) continue; // skip near-black / near-white
+        const bucket = Math.floor(h / 24); // 15 hue buckets
+        const cur = buckets.get(bucket) || { count: 0, s: 0, l: 0 };
+        cur.count++; cur.s += s; cur.l += l;
+        buckets.set(bucket, cur);
+    }
+    if (buckets.size === 0) return null;
+    return [...buckets.entries()]
+        .map(([b, v]) => ({
+            h: b * 24 + 12,
+            s: Math.min(85, (v.s / v.count) * 100),
+            l: Math.max(45, Math.min(65, (v.l / v.count) * 100)),
+            count: v.count,
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3)
+        .map(x => [x.h, x.s, x.l]);
+}
+
+function sampleSmartColors() {
+    if (!smartVideoEl || !smartVideoEl.videoWidth) return;
+    try {
+        smartCtx.drawImage(smartVideoEl, 0, 0, smartCanvas.width, smartCanvas.height);
+        const data = smartCtx.getImageData(0, 0, smartCanvas.width, smartCanvas.height).data;
+        const colors = extractDominantColors(data);
+        if (colors && colors.length) smartTarget = colors;
+    } catch { /* ignore (e.g. tainted canvas) */ }
+}
+
+function updateSmartCurrent() {
+    if (!smartTarget) return;
+    if (!smartCurrent) { smartCurrent = smartTarget.map(c => [...c]); return; }
+    while (smartCurrent.length < smartTarget.length) smartCurrent.push([...smartTarget[smartCurrent.length]]);
+    while (smartCurrent.length > smartTarget.length) smartCurrent.pop();
+    const RATE = 0.05;
+    for (let i = 0; i < smartCurrent.length; i++) {
+        smartCurrent[i][0] = lerpHue(smartCurrent[i][0], smartTarget[i][0], RATE);
+        smartCurrent[i][1] += (smartTarget[i][1] - smartCurrent[i][1]) * RATE;
+        smartCurrent[i][2] += (smartTarget[i][2] - smartCurrent[i][2]) * RATE;
+    }
+}
+
 const PALETTES = {
     aurora:  (i, n) => [200 + (i / n) * 140, 85, 65],
     ocean:   (i, n) => [180 + (i / n) * 60,  78, 58],
@@ -2202,6 +2312,20 @@ const PALETTES = {
     forest:  (i, n) => [100 + (i / n) * 80,  72, 52],
     rainbow: (i, n) => [(i / n) * 360,        82, 60],
     mono:    () => [0, 0, 88],
+    smart:   (i, n) => {
+        if (!smartCurrent || smartCurrent.length === 0) {
+            // Fallback while we wait for the first sample (or if no video shared)
+            return [220, 35, 75];
+        }
+        const len = smartCurrent.length;
+        const t = (i / n) * len;
+        const idx = Math.floor(t) % len;
+        const next = (idx + 1) % len;
+        const f = t - Math.floor(t);
+        const a = smartCurrent[idx];
+        const b = smartCurrent[next];
+        return [lerpHue(a[0], b[0], f), a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f];
+    },
 };
 const paletteColor = (name, i, n, alpha) => {
     const [h, s, l] = (PALETTES[name] || PALETTES.aurora)(i, n);
