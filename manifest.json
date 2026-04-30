@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ViperTab",
-  "version": "1.4.3",
-  "description": "A macOS-inspired new tab page with Apple Glass UI, widgets, dock, and spotlight search.",
+  "version": "1.4.4",
+  "description": "A macOS-inspired new tab page with glass UI, customizable widgets, a dock, and Spotlight search.",
   "author": "ViperShard",
   "permissions": [
     "tabs",
