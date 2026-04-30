@@ -406,24 +406,52 @@
             white-space: nowrap;
         }
 
-        /* Per-edition version blocks */
+        /* Per-edition version blocks — collapsible dropdowns */
         .version-edition {
-            margin-bottom: 56px;
+            margin-bottom: 10px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: border-color 0.15s, background 0.15s;
         }
-        .version-edition:last-of-type { margin-bottom: 0; }
+        .version-edition[open] {
+            border-color: var(--line-bright);
+            background: rgba(255, 255, 255, 0.02);
+        }
         .version-edition-head {
             display: flex;
             align-items: baseline;
             gap: 14px;
-            margin-bottom: 6px;
-            padding-bottom: 14px;
-            border-bottom: 1px solid var(--line-bright);
+            padding: 14px 20px;
+            cursor: pointer;
+            list-style: none;
+            user-select: none;
+            transition: background 0.15s;
+        }
+        .version-edition-head::-webkit-details-marker { display: none; }
+        .version-edition-head::marker { content: ''; }
+        .version-edition-head:hover { background: rgba(255, 255, 255, 0.025); }
+        .version-edition-head::after {
+            content: '▾';
+            margin-left: auto;
+            color: var(--text-faint);
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+        .version-edition[open] .version-edition-head::after {
+            transform: rotate(180deg);
         }
         .version-edition-head h3 {
-            font-size: 26px;
-            font-weight: 400;
-            letter-spacing: -0.6px;
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: -0.3px;
+            margin: 0;
         }
+        .version-edition[open] .version-list {
+            border-top: 1px solid var(--line);
+            padding: 4px 20px 14px;
+        }
+        .version-edition .version-list { padding: 0 20px; }
         .version-current {
             font-family: ui-monospace, "SF Mono", Menlo, monospace;
             font-size: 13.5px;
@@ -803,41 +831,41 @@
         <h2 class="section-title">Every release, by edition.</h2>
         <p class="section-lede">Each edition has its own version line. Pinning to an older build? Every zip stays downloadable forever — newest at the top of each list.</p>
 
-        <div class="version-edition" id="legacy-main">
-            <div class="version-edition-head">
+        <details class="version-edition" id="legacy-main">
+            <summary class="version-edition-head">
                 <h3>ViperTab</h3>
                 <span class="version-current" data-edition-version="main">v—</span>
                 <span class="version-downloads" data-edition-downloads="main">—</span>
-            </div>
+            </summary>
             <div class="version-list" data-edition-list="main"><div class="version-loading">Loading…</div></div>
-        </div>
+        </details>
 
-        <div class="version-edition" id="legacy-dev">
-            <div class="version-edition-head">
+        <details class="version-edition" id="legacy-dev">
+            <summary class="version-edition-head">
                 <h3>ViperTab Dev</h3>
                 <span class="version-current" data-edition-version="dev">v—</span>
                 <span class="version-downloads" data-edition-downloads="dev">—</span>
-            </div>
+            </summary>
             <div class="version-list" data-edition-list="dev"><div class="version-loading">Loading…</div></div>
-        </div>
+        </details>
 
-        <div class="version-edition" id="legacy-student">
-            <div class="version-edition-head">
+        <details class="version-edition" id="legacy-student">
+            <summary class="version-edition-head">
                 <h3>ViperTab Student</h3>
                 <span class="version-current" data-edition-version="student">v—</span>
                 <span class="version-downloads" data-edition-downloads="student">—</span>
-            </div>
+            </summary>
             <div class="version-list" data-edition-list="student"><div class="version-loading">Loading…</div></div>
-        </div>
+        </details>
 
-        <div class="version-edition" id="legacy-zen">
-            <div class="version-edition-head">
+        <details class="version-edition" id="legacy-zen">
+            <summary class="version-edition-head">
                 <h3>ViperTab Zen</h3>
                 <span class="version-current" data-edition-version="zen">v—</span>
                 <span class="version-downloads" data-edition-downloads="zen">—</span>
-            </div>
+            </summary>
             <div class="version-list" data-edition-list="zen"><div class="version-loading">Loading…</div></div>
-        </div>
+        </details>
     </section>
 
     <section class="cta-band">
@@ -865,6 +893,19 @@
     </footer>
 
     <script>
+        // If someone deep-links to #legacy-main / #legacy-dev / etc., auto-open
+        // that <details> so they land on the expanded list.
+        function openHashedDetails() {
+            try {
+                const id = location.hash.replace('#', '');
+                if (!id) return;
+                const el = document.getElementById(id);
+                if (el && el.tagName === 'DETAILS') el.open = true;
+            } catch {}
+        }
+        openHashedDetails();
+        window.addEventListener('hashchange', openHashedDetails);
+
         // Show current version per edition (from version.json's editions block,
         // falling back to the legacy flat schema for older repo states).
         fetch('https://raw.githubusercontent.com/ViperShard/ViperTab/main/version.json?t=' + Date.now())
