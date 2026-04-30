@@ -334,6 +334,47 @@
             align-self: flex-start;
             margin-top: 6px;
         }
+        .edition-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .edition-version {
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            font-size: 12.5px;
+            color: var(--text-faint);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Per-edition version blocks */
+        .version-edition {
+            margin-bottom: 56px;
+        }
+        .version-edition:last-of-type { margin-bottom: 0; }
+        .version-edition-head {
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+            margin-bottom: 6px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--line-bright);
+        }
+        .version-edition-head h3 {
+            font-size: 26px;
+            font-weight: 400;
+            letter-spacing: -0.6px;
+        }
+        .version-current {
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            font-size: 13.5px;
+            color: var(--gold);
+            background: var(--gold-soft);
+            padding: 4px 11px;
+            border-radius: 5px;
+            border: 1px solid rgba(201, 163, 107, 0.22);
+            font-weight: 600;
+        }
 
         /* === Version history === */
         .version-list {
@@ -620,7 +661,10 @@
 
         <div class="editions">
             <div class="edition">
-                <div class="edition-tag">Default</div>
+                <div class="edition-header">
+                    <div class="edition-tag">Default</div>
+                    <span class="edition-version" data-edition-version="main">v—</span>
+                </div>
                 <h3>ViperTab</h3>
                 <p>Apple Glass desktop with clock, weather, notes, calculator, world clocks, recently closed, sound visualizer, and the rest of the home pack — plus 16 widgets to swap freely.</p>
                 <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip" class="btn btn-primary edition-cta">
@@ -628,9 +672,12 @@
                 </a>
             </div>
             <div class="edition">
-                <div class="edition-tag edition-tag-dev">Dev</div>
+                <div class="edition-header">
+                    <div class="edition-tag edition-tag-dev">Dev</div>
+                    <span class="edition-version" data-edition-version="dev">v—</span>
+                </div>
                 <h3>ViperTab Dev</h3>
-                <p>A real workspace. Multi-tab <strong>scratchpad code editor</strong> in the prized tall slot, <strong>line-by-line diff viewer</strong> across the bottom, plus JWT decoder, hash generator (SHA-1/256/384/512), regex tester, JSON formatter, encoder/decoder, timestamps, UUID, and Hacker News. Modern dev aesthetic, gold ViperShard accent, JetBrains-Mono labels.</p>
+                <p>Terminal/btop aesthetic — solid panels, sharp borders, bracketed widget headers, dot-grid background, all-monospace. Multi-tab <strong>scratchpad code editor</strong>, <strong>line-by-line diff viewer</strong>, JWT decoder, hash generator (SHA-1/256/384/512), regex tester, JSON formatter, encoders, timestamps, UUID, and Hacker News.</p>
                 <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip" class="btn btn-primary edition-cta">
                     <span>↓</span><span>Download</span>
                 </a>
@@ -669,10 +716,24 @@
 
     <section class="body" id="versions">
         <div class="section-eyebrow">Version History</div>
-        <h2 class="section-title">All releases.</h2>
-        <p class="section-lede">Pinning to an older version, or just want to see what changed? Every release stays downloadable forever — newest first.</p>
+        <h2 class="section-title">Every release, by edition.</h2>
+        <p class="section-lede">Each edition has its own version line. Pinning to an older build? Every zip stays downloadable forever — newest first.</p>
 
-        <div id="version-list" class="version-list"><div class="version-loading">Loading…</div></div>
+        <div class="version-edition">
+            <div class="version-edition-head">
+                <h3>ViperTab</h3>
+                <span class="version-current" data-edition-version="main">v—</span>
+            </div>
+            <div class="version-list" data-edition-list="main"><div class="version-loading">Loading…</div></div>
+        </div>
+
+        <div class="version-edition">
+            <div class="version-edition-head">
+                <h3>ViperTab Dev</h3>
+                <span class="version-current" data-edition-version="dev">v—</span>
+            </div>
+            <div class="version-list" data-edition-list="dev"><div class="version-loading">Loading…</div></div>
+        </div>
     </section>
 
     <section class="cta-band">
@@ -700,68 +761,93 @@
     </footer>
 
     <script>
-        // Show the latest version in hero + CTA band
+        // Show current version per edition (from version.json's editions block,
+        // falling back to the legacy flat schema for older repo states).
         fetch('https://raw.githubusercontent.com/ViperShard/ViperTab/main/version.json?t=' + Date.now())
             .then(r => r.json())
             .then(d => {
-                document.getElementById('version').textContent = d.version;
-                document.getElementById('version-2').textContent = d.version;
+                const main = d.editions?.main?.version || d.version || '—';
+                const dev  = d.editions?.dev?.version  || d.version || '—';
+                document.getElementById('version').textContent = main;
+                document.getElementById('version-2').textContent = main;
+                document.querySelectorAll('[data-edition-version="main"]').forEach(el => el.textContent = 'v' + main);
+                document.querySelectorAll('[data-edition-version="dev"]').forEach(el => el.textContent = 'v' + dev);
             })
             .catch(() => {
-                document.getElementById('version').textContent = '—';
-                document.getElementById('version-2').textContent = '—';
+                ['version', 'version-2'].forEach(id => document.getElementById(id).textContent = '—');
             });
 
-        // Fetch all releases for the Version History section
-        fetch('https://api.github.com/repos/ViperShard/ViperTab/releases?per_page=30')
+        // Fetch every release and split into per-edition history streams.
+        // A release belongs to the Main history if it has ViperTab.zip; to the
+        // Dev history if it has ViperTabDev.zip. (Most releases include both;
+        // single-edition releases include just one zip.)
+        function buildVersionItem(rel, isLatest, asset) {
+            const item = document.createElement('div');
+            item.className = 'version-item' + (isLatest ? ' version-latest' : '');
+
+            const head = document.createElement('div');
+            head.className = 'version-head';
+            const tag = document.createElement('span');
+            tag.className = 'version-tag';
+            tag.textContent = rel.tag_name || rel.name || '—';
+            const date = document.createElement('span');
+            date.className = 'version-date';
+            if (rel.published_at) {
+                date.textContent = new Date(rel.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            }
+            const badge = document.createElement('span');
+            badge.className = 'version-badge';
+            badge.textContent = isLatest ? 'Latest' : 'Legacy';
+            head.append(tag, date, badge);
+
+            const notes = document.createElement('p');
+            notes.className = 'version-notes';
+            notes.textContent = (rel.body && rel.body.trim()) || 'No notes.';
+
+            const downloads = document.createElement('div');
+            downloads.className = 'version-downloads';
+            const a = document.createElement('a');
+            a.href = asset.browser_download_url;
+            a.textContent = '↓  ' + asset.name;
+            a.className = 'version-download';
+            downloads.appendChild(a);
+
+            item.append(head, notes, downloads);
+            return item;
+        }
+
+        fetch('https://api.github.com/repos/ViperShard/ViperTab/releases?per_page=50')
             .then(r => r.json())
             .then(releases => {
-                const list = document.getElementById('version-list');
-                list.innerHTML = '';
+                const mainList = document.querySelector('[data-edition-list="main"]');
+                const devList  = document.querySelector('[data-edition-list="dev"]');
+                mainList.innerHTML = '';
+                devList.innerHTML = '';
                 if (!Array.isArray(releases) || releases.length === 0) {
-                    list.innerHTML = '<div class="version-error">No releases yet.</div>';
+                    mainList.innerHTML = '<div class="version-error">No releases yet.</div>';
+                    devList.innerHTML  = '<div class="version-error">No releases yet.</div>';
                     return;
                 }
-                releases.forEach((rel, i) => {
-                    const item = document.createElement('div');
-                    item.className = 'version-item' + (i === 0 ? ' version-latest' : '');
-
-                    const head = document.createElement('div');
-                    head.className = 'version-head';
-                    const tag = document.createElement('span');
-                    tag.className = 'version-tag';
-                    tag.textContent = rel.tag_name || rel.name || '—';
-                    const date = document.createElement('span');
-                    date.className = 'version-date';
-                    if (rel.published_at) {
-                        date.textContent = new Date(rel.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                let mainSeen = 0, devSeen = 0;
+                releases.forEach(rel => {
+                    const mainAsset = (rel.assets || []).find(a => a.name === 'ViperTab.zip');
+                    const devAsset  = (rel.assets || []).find(a => a.name === 'ViperTabDev.zip');
+                    if (mainAsset) {
+                        mainList.appendChild(buildVersionItem(rel, mainSeen === 0, mainAsset));
+                        mainSeen++;
                     }
-                    const badge = document.createElement('span');
-                    badge.className = 'version-badge';
-                    badge.textContent = i === 0 ? 'Latest' : 'Legacy';
-                    head.append(tag, date, badge);
-
-                    const notes = document.createElement('p');
-                    notes.className = 'version-notes';
-                    notes.textContent = (rel.body && rel.body.trim()) || 'No notes.';
-
-                    const downloads = document.createElement('div');
-                    downloads.className = 'version-downloads';
-                    (rel.assets || []).filter(a => a.name && a.name.endsWith('.zip')).forEach(asset => {
-                        const a = document.createElement('a');
-                        a.href = asset.browser_download_url;
-                        a.textContent = '↓  ' + asset.name;
-                        a.className = 'version-download';
-                        downloads.appendChild(a);
-                    });
-
-                    item.append(head, notes, downloads);
-                    list.appendChild(item);
+                    if (devAsset) {
+                        devList.appendChild(buildVersionItem(rel, devSeen === 0, devAsset));
+                        devSeen++;
+                    }
                 });
+                if (mainSeen === 0) mainList.innerHTML = '<div class="version-error">No ViperTab releases yet.</div>';
+                if (devSeen === 0)  devList.innerHTML  = '<div class="version-error">No ViperTab Dev releases yet.</div>';
             })
             .catch(() => {
-                document.getElementById('version-list').innerHTML =
-                    '<div class="version-error">Could not load releases. <a href="https://github.com/ViperShard/ViperTab/releases">View on GitHub</a></div>';
+                const errMsg = '<div class="version-error">Could not load releases. <a href="https://github.com/ViperShard/ViperTab/releases">View on GitHub</a></div>';
+                document.querySelector('[data-edition-list="main"]').innerHTML = errMsg;
+                document.querySelector('[data-edition-list="dev"]').innerHTML = errMsg;
             });
     </script>
 </body>

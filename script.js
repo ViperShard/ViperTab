@@ -2246,6 +2246,18 @@ function initGlobalKeys() {
 async function boot() {
     const savedPrefs = await getStored('vipertab.prefs');
     if (savedPrefs) Object.assign(PREFS, savedPrefs);
+
+    // One-time migration: dev-edition installs that predate the terminal theme
+    // landed on `glass`. Bump them to the new `dev` theme so the rebuild is visible.
+    if (IS_DEV_EDITION && PREFS.theme === 'glass') {
+        const migrated = await getStored('vipertab.dev-theme-migrated');
+        if (!migrated) {
+            PREFS.theme = 'dev';
+            await setStored('vipertab.prefs', PREFS);
+            await setStored('vipertab.dev-theme-migrated', true);
+        }
+    }
+
     applyTheme(PREFS.theme);
     const customWp = await getStored('vipertab.wallpaper');
     if (customWp) applyCustomWallpaper(customWp);
