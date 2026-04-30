@@ -378,6 +378,28 @@
             color: var(--text-faint);
             font-variant-numeric: tabular-nums;
         }
+        .edition-downloads {
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            font-size: 11px;
+            color: var(--text-faint);
+            font-variant-numeric: tabular-nums;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--line);
+            white-space: nowrap;
+        }
+        .version-downloads {
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            font-size: 12px;
+            color: var(--text-faint);
+            font-variant-numeric: tabular-nums;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--line);
+            white-space: nowrap;
+        }
 
         /* Per-edition version blocks */
         .version-edition {
@@ -627,6 +649,7 @@
                     <div class="edition-header">
                         <div class="edition-tag">Default</div>
                         <span class="edition-version" data-edition-version="main">v—</span>
+                        <span class="edition-downloads" data-edition-downloads="main">—</span>
                     </div>
                     <h3>ViperTab</h3>
                     <p>Apple Glass desktop with clock, weather, notes, calculator, world clocks, recently closed, sound visualizer, and the rest of the home pack — plus 20+ widgets to swap freely.</p>
@@ -641,6 +664,7 @@
                     <div class="edition-header">
                         <div class="edition-tag edition-tag-dev">Dev</div>
                         <span class="edition-version" data-edition-version="dev">v—</span>
+                        <span class="edition-downloads" data-edition-downloads="dev">—</span>
                     </div>
                     <h3>ViperTab Dev</h3>
                     <p>Terminal/btop aesthetic — solid panels, sharp borders, bracketed widget headers, dot-grid background, all-monospace. Multi-tab <strong>scratchpad code editor</strong>, <strong>diff viewer</strong>, JWT decoder, hash generator, regex tester, JSON formatter, encoders, timestamps, UUID, Hacker News.</p>
@@ -655,6 +679,7 @@
                     <div class="edition-header">
                         <div class="edition-tag edition-tag-student">Student</div>
                         <span class="edition-version" data-edition-version="student">v—</span>
+                        <span class="edition-downloads" data-edition-downloads="student">—</span>
                     </div>
                     <h3>ViperTab Student</h3>
                     <p>Built for high-school workflows. <strong>Multi-tab markdown notebook that saves to your disk</strong>, school quick-links (Docs, Drive, Classroom, Khan, Quizlet…), due-dates calendar, <strong>GPA calculator</strong>, citation generator (MLA / APA / Chicago), flashcards, Pomodoro, to-do.</p>
@@ -762,6 +787,7 @@
             <div class="version-edition-head">
                 <h3>ViperTab</h3>
                 <span class="version-current" data-edition-version="main">v—</span>
+                <span class="version-downloads" data-edition-downloads="main">—</span>
             </div>
             <div class="version-list" data-edition-list="main"><div class="version-loading">Loading…</div></div>
         </div>
@@ -770,6 +796,7 @@
             <div class="version-edition-head">
                 <h3>ViperTab Dev</h3>
                 <span class="version-current" data-edition-version="dev">v—</span>
+                <span class="version-downloads" data-edition-downloads="dev">—</span>
             </div>
             <div class="version-list" data-edition-list="dev"><div class="version-loading">Loading…</div></div>
         </div>
@@ -778,6 +805,7 @@
             <div class="version-edition-head">
                 <h3>ViperTab Student</h3>
                 <span class="version-current" data-edition-version="student">v—</span>
+                <span class="version-downloads" data-edition-downloads="student">—</span>
             </div>
             <div class="version-list" data-edition-list="student"><div class="version-loading">Loading…</div></div>
         </div>
@@ -869,9 +897,9 @@
             .then(r => r.json())
             .then(releases => {
                 const lists = {
-                    main:    { el: document.querySelector('[data-edition-list="main"]'),    asset: 'ViperTab.zip',         label: 'ViperTab',         seen: 0 },
-                    dev:     { el: document.querySelector('[data-edition-list="dev"]'),     asset: 'ViperTabDev.zip',      label: 'ViperTab Dev',     seen: 0 },
-                    student: { el: document.querySelector('[data-edition-list="student"]'), asset: 'ViperTabStudent.zip',  label: 'ViperTab Student', seen: 0 },
+                    main:    { el: document.querySelector('[data-edition-list="main"]'),    asset: 'ViperTab.zip',         label: 'ViperTab',         seen: 0, downloads: 0 },
+                    dev:     { el: document.querySelector('[data-edition-list="dev"]'),     asset: 'ViperTabDev.zip',      label: 'ViperTab Dev',     seen: 0, downloads: 0 },
+                    student: { el: document.querySelector('[data-edition-list="student"]'), asset: 'ViperTabStudent.zip',  label: 'ViperTab Student', seen: 0, downloads: 0 },
                 };
                 Object.values(lists).forEach(L => L.el.innerHTML = '');
                 if (!Array.isArray(releases) || releases.length === 0) {
@@ -879,16 +907,19 @@
                     return;
                 }
                 releases.forEach(rel => {
-                    Object.values(lists).forEach(L => {
+                    Object.entries(lists).forEach(([ed, L]) => {
                         const asset = (rel.assets || []).find(a => a.name === L.asset);
                         if (asset) {
                             L.el.appendChild(buildVersionItem(rel, L.seen === 0, asset));
                             L.seen++;
+                            L.downloads += asset.download_count || 0;
                         }
                     });
                 });
-                Object.values(lists).forEach(L => {
+                Object.entries(lists).forEach(([ed, L]) => {
                     if (L.seen === 0) L.el.innerHTML = `<div class="version-error">No ${L.label} releases yet.</div>`;
+                    const text = `↓ ${L.downloads.toLocaleString()} download${L.downloads === 1 ? '' : 's'}`;
+                    document.querySelectorAll(`[data-edition-downloads="${ed}"]`).forEach(el => el.textContent = text);
                 });
             })
             .catch(() => {
