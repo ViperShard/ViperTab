@@ -1,27 +1,27 @@
 {
-  "version": "1.4.7",
+  "version": "1.4.8",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Visualizer: new 'Smart' palette samples the captured tab's video frame and pulls 2-3 dominant colors out, then paints any visualizer style (Bars / Mirror / Wave / Circle) in those colors. Smooth 0.4s interpolation between samples (every 600ms) so colors flow with the music. Audio analysis works exactly as before; the video track is just kept alive for color sampling and stays hidden — nothing of the tab UI is shown.\n",
+  "notes": "Update banner is now a stack — every edition with an undismissed update gets its own row, dismissed independently. Primary banner (your edition) at top, secondaries below, all clearly labeled with the edition's colored chip and full name.\n",
   "editions": {
     "main": {
-      "version": "1.4.7",
+      "version": "1.4.8",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Visualizer: new 'Smart' palette samples the captured tab's video frame and pulls 2-3 dominant colors out, then paints any visualizer style (Bars / Mirror / Wave / Circle) in those colors. Smooth 0.4s interpolation between samples (every 600ms) so colors flow with the music. Audio analysis works exactly as before; the video track is just kept alive for color sampling and stays hidden — nothing of the tab UI is shown.\n"
+      "notes": "Update banner is now a stack — every edition with an undismissed update gets its own row, dismissed independently. Primary banner (your edition) at top, secondaries below, all clearly labeled with the edition's colored chip and full name.\n"
     },
     "dev": {
-      "version": "1.4.7",
+      "version": "1.4.8",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Visualizer: new 'Smart' palette samples the captured tab's video frame and pulls 2-3 dominant colors out, then paints any visualizer style (Bars / Mirror / Wave / Circle) in those colors. Smooth 0.4s interpolation between samples (every 600ms) so colors flow with the music. Audio analysis works exactly as before; the video track is just kept alive for color sampling and stays hidden — nothing of the tab UI is shown.\n"
+      "notes": "Update banner is now a stack — every edition with an undismissed update gets its own row, dismissed independently. Primary banner (your edition) at top, secondaries below, all clearly labeled with the edition's colored chip and full name.\n"
     },
     "student": {
-      "version": "1.0.4",
+      "version": "1.0.5",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip",
-      "notes": "Visualizer: new 'Smart' palette samples the captured tab's video frame and pulls 2-3 dominant colors out, then paints any visualizer style (Bars / Mirror / Wave / Circle) in those colors. Smooth 0.4s interpolation between samples (every 600ms) so colors flow with the music. Audio analysis works exactly as before; the video track is just kept alive for color sampling and stays hidden — nothing of the tab UI is shown.\n"
+      "notes": "Update banner is now a stack — every edition with an undismissed update gets its own row, dismissed independently. Primary banner (your edition) at top, secondaries below, all clearly labeled with the edition's colored chip and full name.\n"
     },
     "zen": {
-      "version": "1.0.4",
+      "version": "1.0.5",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip",
-      "notes": "Visualizer: new 'Smart' palette samples the captured tab's video frame and pulls 2-3 dominant colors out, then paints any visualizer style (Bars / Mirror / Wave / Circle) in those colors. Smooth 0.4s interpolation between samples (every 600ms) so colors flow with the music. Audio analysis works exactly as before; the video track is just kept alive for color sampling and stays hidden — nothing of the tab UI is shown.\n"
+      "notes": "Update banner is now a stack — every edition with an undismissed update gets its own row, dismissed independently. Primary banner (your edition) at top, secondaries below, all clearly labeled with the edition's colored chip and full name.\n"
     }
   }
 }
