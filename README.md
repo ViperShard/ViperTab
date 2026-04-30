@@ -4,7 +4,7 @@
   <img src="icons/vipershard-logo.png" alt="ViperShard" width="220">
 </p>
 
-A macOS-inspired new tab page for Chrome, Edge, Brave, and Arc — Apple Glass UI, helpful widgets, an editable dock, and a `/`-key Spotlight that searches the web, your bookmarks, and your open tabs. Part of the ViperShard family.
+A macOS-inspired new tab page for Chrome, Edge, Brave, Opera, and other Chromium-based browsers — Apple Glass UI, helpful widgets, an editable dock, and a `/`-key Spotlight that searches the web, your bookmarks, and your open tabs. Part of the ViperShard family.
 
 **[→ Download &amp; install](https://vipershard.github.io/ViperTab/)** · [Latest release](https://github.com/ViperShard/ViperTab/releases/latest) · [All versions](https://github.com/ViperShard/ViperTab/releases)
 

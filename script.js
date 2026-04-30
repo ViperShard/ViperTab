@@ -22,18 +22,22 @@ async function setStored(key, value) {
     return new Promise(res => SS.set({ [key]: value }, res));
 }
 
-// Edition detection — `ViperTab Dev` vs main `ViperTab`
+// Edition detection — main `ViperTab`, `ViperTab Dev`, `ViperTab Student`
 const EDITION_NAME = (typeof chrome !== 'undefined' && chrome.runtime?.getManifest?.()?.name) || 'ViperTab';
 const IS_DEV_EDITION = /\bdev\b/i.test(EDITION_NAME);
+const IS_STUDENT_EDITION = /\bstudent\b/i.test(EDITION_NAME);
+const EDITION_ID = IS_DEV_EDITION ? 'dev' : IS_STUDENT_EDITION ? 'student' : 'main';
+const ALL_EDITIONS = ['main', 'dev', 'student'];
+const EDITION_LABEL = { main: 'ViperTab', dev: 'ViperTab Dev', student: 'ViperTab Student' };
 if (typeof document !== 'undefined') {
-    document.documentElement.setAttribute('data-edition', IS_DEV_EDITION ? 'dev' : 'main');
+    document.documentElement.setAttribute('data-edition', EDITION_ID);
 }
 
 const PREFS = {
     timeFormat: '24',
     tempUnit: 'fahrenheit',
-    theme: IS_DEV_EDITION ? 'dev' : 'glass',
-    wallpaperId: IS_DEV_EDITION ? 'mono-black' : 'sequoia',
+    theme: IS_DEV_EDITION ? 'dev' : IS_STUDENT_EDITION ? 'light' : 'glass',
+    wallpaperId: IS_DEV_EDITION ? 'mono-black' : IS_STUDENT_EDITION ? 'sunrise' : 'sequoia',
     vizType: 'bars',
     vizPalette: IS_DEV_EDITION ? 'mono' : 'aurora',
 };
@@ -1443,6 +1447,613 @@ const WIDGET_LIBRARY = {
             return () => container.classList.remove('diff-widget');
         },
     },
+    // ----- Student edition widgets ------------------------------------
+    notebook: {
+        id: 'notebook', name: 'Notebook (markdown + disk save)', icon: '📓', category: 'Productivity',
+        sizes: ['tall', 'wide'],
+        render(container) {
+            container.classList.add('nb-widget');
+            container.innerHTML = `
+                <div class="widget-label nb-bar">
+                    <span class="nb-status">Notebook</span>
+                    <div class="nb-actions">
+                        <button class="nb-btn nb-connect" title="Connect / change folder">📁</button>
+                        <button class="nb-btn nb-new" title="New file">+</button>
+                    </div>
+                </div>
+                <div class="nb-tabs"></div>
+                <div class="nb-toolbar">
+                    <button class="nb-tool" data-md="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+                    <button class="nb-tool" data-md="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+                    <button class="nb-tool" data-md="h1" title="Heading 1">H1</button>
+                    <button class="nb-tool" data-md="h2" title="Heading 2">H2</button>
+                    <button class="nb-tool" data-md="link" title="Link (Ctrl+K)">🔗</button>
+                    <button class="nb-tool" data-md="list" title="Bullet list">•</button>
+                    <button class="nb-tool" data-md="numlist" title="Numbered list">1.</button>
+                    <button class="nb-tool" data-md="quote" title="Quote">&ldquo;</button>
+                    <button class="nb-tool" data-md="code" title="Code">&lt;/&gt;</button>
+                </div>
+                <textarea class="nb-area" placeholder="Connect a folder (📁) — your notes will save as .md files on disk." spellcheck="false"></textarea>`;
+            const tabsEl = container.querySelector('.nb-tabs');
+            const toolbar = container.querySelector('.nb-toolbar');
+            const area = container.querySelector('.nb-area');
+            const status = container.querySelector('.nb-status');
+            const connectBtn = container.querySelector('.nb-connect');
+            const newBtn = container.querySelector('.nb-new');
+            let dirHandle = null;
+            let files = []; // { name, handle, content }
+            let activeIdx = -1;
+            let saveTimer = null;
+
+            // ---- IndexedDB for FileSystemDirectoryHandle persistence ----
+            const DB = 'vipertab-nb', STORE = 'h';
+            const idbOpen = () => new Promise((res, rej) => {
+                const req = indexedDB.open(DB, 1);
+                req.onupgradeneeded = () => req.result.createObjectStore(STORE);
+                req.onsuccess = () => res(req.result);
+                req.onerror = () => rej(req.error);
+            });
+            const idbGet = async (k) => {
+                const db = await idbOpen();
+                return new Promise((res, rej) => {
+                    const r = db.transaction(STORE).objectStore(STORE).get(k);
+                    r.onsuccess = () => res(r.result);
+                    r.onerror = () => rej(r.error);
+                });
+            };
+            const idbSet = async (k, v) => {
+                const db = await idbOpen();
+                return new Promise((res, rej) => {
+                    const tx = db.transaction(STORE, 'readwrite');
+                    tx.objectStore(STORE).put(v, k);
+                    tx.oncomplete = () => res();
+                    tx.onerror = () => rej(tx.error);
+                });
+            };
+
+            async function ensurePerm(handle) {
+                if (!handle.queryPermission) return true;
+                const cur = await handle.queryPermission({ mode: 'readwrite' });
+                if (cur === 'granted') return true;
+                const req = await handle.requestPermission({ mode: 'readwrite' });
+                return req === 'granted';
+            }
+
+            async function loadFolder() {
+                files = [];
+                for await (const entry of dirHandle.values()) {
+                    if (entry.kind === 'file' && entry.name.toLowerCase().endsWith('.md')) {
+                        const f = await entry.getFile();
+                        files.push({ name: entry.name, handle: entry, content: await f.text() });
+                    }
+                }
+                files.sort((a, b) => a.name.localeCompare(b.name));
+                if (files.length === 0) {
+                    const h = await dirHandle.getFileHandle('notes.md', { create: true });
+                    files.push({ name: 'notes.md', handle: h, content: '' });
+                }
+                activeIdx = 0;
+                render();
+            }
+
+            function render() {
+                tabsEl.innerHTML = '';
+                files.forEach((f, i) => {
+                    const tab = document.createElement('div');
+                    tab.className = 'nb-tab' + (i === activeIdx ? ' active' : '');
+                    const name = document.createElement('span');
+                    name.className = 'nb-tab-name';
+                    name.textContent = f.name.replace(/\.md$/i, '');
+                    tab.appendChild(name);
+                    tab.title = f.name + ' — double-click to rename';
+                    tab.addEventListener('click', () => { activeIdx = i; render(); });
+                    tab.addEventListener('dblclick', async (e) => {
+                        e.stopPropagation();
+                        const proposed = window.prompt('Rename file:', f.name);
+                        if (!proposed) return;
+                        const newName = proposed.endsWith('.md') ? proposed : proposed + '.md';
+                        if (newName === f.name) return;
+                        try {
+                            const newH = await dirHandle.getFileHandle(newName, { create: true });
+                            const w = await newH.createWritable();
+                            await w.write(f.content);
+                            await w.close();
+                            await dirHandle.removeEntry(f.name);
+                            f.name = newName; f.handle = newH;
+                            render();
+                        } catch (err) { status.textContent = 'Rename failed'; }
+                    });
+                    tabsEl.appendChild(tab);
+                });
+                if (activeIdx >= 0 && files[activeIdx]) {
+                    area.value = files[activeIdx].content;
+                    area.disabled = false;
+                    status.textContent = files[activeIdx].name;
+                } else {
+                    area.value = '';
+                    area.disabled = true;
+                    status.textContent = dirHandle ? 'No file' : 'No folder connected';
+                }
+            }
+
+            async function tryReconnect() {
+                const stored = await idbGet('dir');
+                if (!stored) { status.textContent = 'Click 📁 to connect a folder'; return; }
+                const ok = await ensurePerm(stored);
+                if (!ok) { status.textContent = 'Tap 📁 to reconnect folder'; return; }
+                dirHandle = stored;
+                await loadFolder();
+            }
+
+            async function connect() {
+                if (!window.showDirectoryPicker) {
+                    status.textContent = 'Browser unsupported (need Chromium)';
+                    return;
+                }
+                try {
+                    const h = await window.showDirectoryPicker({ mode: 'readwrite' });
+                    dirHandle = h;
+                    await idbSet('dir', h);
+                    await loadFolder();
+                } catch { /* user cancelled */ }
+            }
+
+            connectBtn.addEventListener('click', connect);
+            newBtn.addEventListener('click', async () => {
+                if (!dirHandle) return connect();
+                const proposed = window.prompt('New file name:', `note-${files.length + 1}`);
+                if (!proposed) return;
+                const name = proposed.endsWith('.md') ? proposed : proposed + '.md';
+                const h = await dirHandle.getFileHandle(name, { create: true });
+                files.push({ name, handle: h, content: '' });
+                activeIdx = files.length - 1;
+                render();
+                area.focus();
+            });
+
+            function scheduleSave() {
+                clearTimeout(saveTimer);
+                saveTimer = setTimeout(async () => {
+                    const f = files[activeIdx];
+                    if (!f || !f.handle) return;
+                    try {
+                        const w = await f.handle.createWritable();
+                        await w.write(f.content);
+                        await w.close();
+                        status.textContent = f.name;
+                    } catch { status.textContent = 'Save error — reconnect folder'; }
+                }, 250);
+            }
+
+            area.addEventListener('input', () => {
+                if (activeIdx < 0 || !files[activeIdx]) return;
+                files[activeIdx].content = area.value;
+                scheduleSave();
+            });
+
+            function applyMd(action) {
+                const start = area.selectionStart, end = area.selectionEnd;
+                const before = area.value.slice(0, start);
+                const sel = area.value.slice(start, end);
+                const after = area.value.slice(end);
+                let inserted = sel;
+                let cursorOffset = 0;
+                switch (action) {
+                    case 'bold':    inserted = `**${sel || 'bold'}**`; break;
+                    case 'italic':  inserted = `*${sel || 'italic'}*`; break;
+                    case 'h1':      inserted = `# ${sel || 'Heading'}`; break;
+                    case 'h2':      inserted = `## ${sel || 'Heading'}`; break;
+                    case 'link':    inserted = `[${sel || 'text'}](url)`; cursorOffset = inserted.length - 4; break;
+                    case 'list':    inserted = sel ? sel.split('\n').map(l => '- ' + l).join('\n') : '- '; break;
+                    case 'numlist': inserted = sel ? sel.split('\n').map((l, i) => `${i + 1}. ${l}`).join('\n') : '1. '; break;
+                    case 'quote':   inserted = sel ? sel.split('\n').map(l => '> ' + l).join('\n') : '> '; break;
+                    case 'code':    inserted = sel.includes('\n') ? `\n\`\`\`\n${sel}\n\`\`\`\n` : `\`${sel || 'code'}\``; break;
+                }
+                area.value = before + inserted + after;
+                if (cursorOffset) {
+                    area.selectionStart = start + cursorOffset;
+                    area.selectionEnd = start + cursorOffset + 3; // 'url'
+                } else {
+                    area.selectionStart = start;
+                    area.selectionEnd = start + inserted.length;
+                }
+                area.focus();
+                if (files[activeIdx]) { files[activeIdx].content = area.value; scheduleSave(); }
+            }
+
+            toolbar.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-md]');
+                if (btn) applyMd(btn.dataset.md);
+            });
+
+            area.addEventListener('keydown', (e) => {
+                if (e.ctrlKey || e.metaKey) {
+                    if (e.key.toLowerCase() === 'b') { e.preventDefault(); applyMd('bold'); return; }
+                    if (e.key.toLowerCase() === 'i') { e.preventDefault(); applyMd('italic'); return; }
+                    if (e.key.toLowerCase() === 'k') { e.preventDefault(); applyMd('link'); return; }
+                }
+                if (e.key === 'Tab' && !e.shiftKey) {
+                    e.preventDefault();
+                    const s = area.selectionStart, en = area.selectionEnd;
+                    area.value = area.value.slice(0, s) + '  ' + area.value.slice(en);
+                    area.selectionStart = area.selectionEnd = s + 2;
+                    if (files[activeIdx]) { files[activeIdx].content = area.value; scheduleSave(); }
+                }
+            });
+
+            tryReconnect();
+            return () => { clearTimeout(saveTimer); container.classList.remove('nb-widget'); };
+        },
+    },
+    schoollinks: {
+        id: 'schoollinks', name: 'School Quick-Links', icon: '🏫', category: 'Web',
+        sizes: ['small', 'tall', 'wide'],
+        render(container) {
+            container.classList.add('sl-widget');
+            container.innerHTML = `
+                <div class="widget-label">
+                    <span>School Links</span>
+                    <button class="sl-edit" title="Edit links">✎</button>
+                </div>
+                <div class="sl-grid"></div>`;
+            const grid = container.querySelector('.sl-grid');
+            const editBtn = container.querySelector('.sl-edit');
+            const DEFAULTS = [
+                { name: 'Docs',       url: 'https://docs.google.com',       cat: 'Class' },
+                { name: 'Drive',      url: 'https://drive.google.com',      cat: 'Class' },
+                { name: 'Classroom',  url: 'https://classroom.google.com',  cat: 'Class' },
+                { name: 'Calendar',   url: 'https://calendar.google.com',   cat: 'Class' },
+                { name: 'Gmail',      url: 'https://mail.google.com',       cat: 'Class' },
+                { name: 'Wikipedia',  url: 'https://wikipedia.org',         cat: 'Research' },
+                { name: 'Wolfram',    url: 'https://wolframalpha.com',      cat: 'Research' },
+                { name: 'Scholar',    url: 'https://scholar.google.com',    cat: 'Research' },
+                { name: 'Khan',       url: 'https://khanacademy.org',       cat: 'Study' },
+                { name: 'Quizlet',    url: 'https://quizlet.com',           cat: 'Study' },
+                { name: 'YouTube',    url: 'https://youtube.com',           cat: 'Study' },
+                { name: 'ChatGPT',    url: 'https://chatgpt.com',           cat: 'Study' },
+            ];
+            let items = [];
+            async function load() {
+                items = await getStored('vipertab.schoollinks', DEFAULTS);
+                render();
+            }
+            function favicon(url) {
+                try {
+                    const d = new URL(url).hostname;
+                    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(d)}&sz=64`;
+                } catch { return ''; }
+            }
+            function render() {
+                grid.innerHTML = '';
+                const cats = [...new Set(items.map(i => i.cat || 'Other'))];
+                cats.forEach(cat => {
+                    const sec = document.createElement('div');
+                    sec.className = 'sl-section';
+                    const hd = document.createElement('div'); hd.className = 'sl-section-head'; hd.textContent = cat;
+                    sec.appendChild(hd);
+                    const row = document.createElement('div'); row.className = 'sl-row';
+                    items.filter(i => (i.cat || 'Other') === cat).forEach(it => {
+                        const a = document.createElement('a');
+                        a.className = 'sl-link';
+                        a.href = it.url; a.title = it.name;
+                        const img = document.createElement('img');
+                        img.src = favicon(it.url); img.alt = ''; img.loading = 'lazy';
+                        img.addEventListener('error', () => {
+                            const sp = document.createElement('span');
+                            sp.className = 'sl-fallback';
+                            sp.textContent = (it.name || '?').charAt(0).toUpperCase();
+                            img.replaceWith(sp);
+                        });
+                        const lbl = document.createElement('span');
+                        lbl.className = 'sl-link-name'; lbl.textContent = it.name;
+                        a.append(img, lbl);
+                        row.appendChild(a);
+                    });
+                    sec.appendChild(row);
+                    grid.appendChild(sec);
+                });
+            }
+            editBtn.addEventListener('click', async () => {
+                const json = window.prompt(
+                    'Edit school links (JSON array of {name, url, cat}). Cancel to leave unchanged.',
+                    JSON.stringify(items, null, 2)
+                );
+                if (!json) return;
+                try {
+                    const next = JSON.parse(json);
+                    if (Array.isArray(next)) {
+                        items = next;
+                        await setStored('vipertab.schoollinks', items);
+                        render();
+                    }
+                } catch { window.alert('Invalid JSON — links unchanged.'); }
+            });
+            load();
+            return () => container.classList.remove('sl-widget');
+        },
+    },
+    duedates: {
+        id: 'duedates', name: 'Due Dates', icon: '🗓', category: 'Productivity',
+        sizes: ['small', 'tall', 'wide'],
+        render(container) {
+            container.classList.add('dd-widget');
+            container.innerHTML = `
+                <div class="widget-label">
+                    <span>Due Dates</span>
+                    <div class="dd-nav">
+                        <button class="dd-prev" title="Previous month">‹</button>
+                        <span class="dd-month"></span>
+                        <button class="dd-next" title="Next month">›</button>
+                    </div>
+                </div>
+                <div class="dd-grid"></div>
+                <div class="dd-list"></div>`;
+            const grid = container.querySelector('.dd-grid');
+            const list = container.querySelector('.dd-list');
+            const monthEl = container.querySelector('.dd-month');
+            const prev = container.querySelector('.dd-prev');
+            const next = container.querySelector('.dd-next');
+            const today = new Date();
+            let view = new Date(today.getFullYear(), today.getMonth(), 1);
+            let events = {}; // 'YYYY-MM-DD' -> [{ text }]
+            const key = (d) => d.toISOString().slice(0, 10);
+            const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+            async function load() {
+                events = await getStored('vipertab.duedates', {});
+                render();
+            }
+
+            function render() {
+                monthEl.textContent = view.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                grid.innerHTML = '';
+                const head = ['S','M','T','W','T','F','S'];
+                head.forEach(h => {
+                    const c = document.createElement('div'); c.className = 'dd-cell dd-head'; c.textContent = h; grid.appendChild(c);
+                });
+                const first = new Date(view.getFullYear(), view.getMonth(), 1);
+                const startWd = first.getDay();
+                const daysInMonth = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+                for (let i = 0; i < startWd; i++) {
+                    const e = document.createElement('div'); e.className = 'dd-cell dd-empty'; grid.appendChild(e);
+                }
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const date = new Date(view.getFullYear(), view.getMonth(), d);
+                    const k = key(date);
+                    const cell = document.createElement('div');
+                    cell.className = 'dd-cell dd-day';
+                    if (sameDay(date, today)) cell.classList.add('dd-today');
+                    if (events[k]?.length) cell.classList.add('dd-has');
+                    cell.textContent = d;
+                    cell.title = (events[k] || []).map(e => e.text).join('\n') || 'Click to add an entry';
+                    cell.addEventListener('click', async () => {
+                        const text = window.prompt(`Add entry for ${date.toLocaleDateString()}:`);
+                        if (text == null) return;
+                        const trimmed = text.trim();
+                        if (!trimmed) return;
+                        events[k] = events[k] || [];
+                        events[k].push({ text: trimmed });
+                        await setStored('vipertab.duedates', events);
+                        render();
+                    });
+                    grid.appendChild(cell);
+                }
+                // Upcoming list
+                list.innerHTML = '';
+                const upcoming = Object.keys(events)
+                    .filter(k => new Date(k) >= new Date(today.toDateString()))
+                    .sort()
+                    .slice(0, 6);
+                upcoming.forEach(k => {
+                    (events[k] || []).forEach((ev, i) => {
+                        const li = document.createElement('div');
+                        li.className = 'dd-event';
+                        const dt = document.createElement('span'); dt.className = 'dd-event-date';
+                        dt.textContent = new Date(k).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        const tx = document.createElement('span'); tx.className = 'dd-event-text'; tx.textContent = ev.text;
+                        const x = document.createElement('button'); x.className = 'dd-event-x'; x.textContent = '×';
+                        x.addEventListener('click', async () => {
+                            events[k].splice(i, 1);
+                            if (!events[k].length) delete events[k];
+                            await setStored('vipertab.duedates', events);
+                            render();
+                        });
+                        li.append(dt, tx, x);
+                        list.appendChild(li);
+                    });
+                });
+            }
+            prev.addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); render(); });
+            next.addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); render(); });
+            load();
+            return () => container.classList.remove('dd-widget');
+        },
+    },
+    gpa: {
+        id: 'gpa', name: 'GPA Calculator', icon: '🎯', category: 'Productivity',
+        sizes: ['small', 'tall'],
+        render(container) {
+            container.classList.add('gpa-widget');
+            container.innerHTML = `
+                <div class="widget-label">
+                    <span>GPA</span>
+                    <div class="gpa-summary"><span class="gpa-val gpa-w">—</span><span class="gpa-sub">weighted</span><span class="gpa-val gpa-u">—</span><span class="gpa-sub">unweighted</span></div>
+                </div>
+                <div class="gpa-rows"></div>
+                <button class="gpa-add">+ Add course</button>`;
+            const rows = container.querySelector('.gpa-rows');
+            const addBtn = container.querySelector('.gpa-add');
+            const valW = container.querySelector('.gpa-w');
+            const valU = container.querySelector('.gpa-u');
+            const GRADES = { 'A+': 4.3, 'A': 4.0, 'A-': 3.7, 'B+': 3.3, 'B': 3.0, 'B-': 2.7, 'C+': 2.3, 'C': 2.0, 'C-': 1.7, 'D+': 1.3, 'D': 1.0, 'D-': 0.7, 'F': 0 };
+            const TYPE_BONUS = { 'Reg': 0, 'Hon': 0.5, 'AP': 1.0, 'IB': 1.0 };
+            let courses = [];
+            async function load() { courses = await getStored('vipertab.gpa', []); render(); }
+            function compute() {
+                let totalW = 0, totalU = 0, credits = 0;
+                courses.forEach(c => {
+                    const g = GRADES[c.grade];
+                    if (g == null) return;
+                    const cr = parseFloat(c.credits) || 1;
+                    totalU += g * cr;
+                    totalW += (g + (TYPE_BONUS[c.type] || 0)) * cr;
+                    credits += cr;
+                });
+                if (credits === 0) return { w: '—', u: '—' };
+                return { w: (totalW / credits).toFixed(2), u: (totalU / credits).toFixed(2) };
+            }
+            function render() {
+                rows.innerHTML = '';
+                courses.forEach((c, i) => {
+                    const row = document.createElement('div'); row.className = 'gpa-row';
+                    const name = document.createElement('input'); name.type = 'text'; name.placeholder = 'Course'; name.value = c.name || ''; name.className = 'gpa-name';
+                    name.addEventListener('input', async () => { c.name = name.value; await setStored('vipertab.gpa', courses); });
+                    const grade = document.createElement('select'); grade.className = 'gpa-grade';
+                    Object.keys(GRADES).forEach(g => { const o = document.createElement('option'); o.value = g; o.textContent = g; grade.appendChild(o); });
+                    grade.value = c.grade || 'A';
+                    grade.addEventListener('change', async () => { c.grade = grade.value; await setStored('vipertab.gpa', courses); update(); });
+                    const type = document.createElement('select'); type.className = 'gpa-type';
+                    Object.keys(TYPE_BONUS).forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; type.appendChild(o); });
+                    type.value = c.type || 'Reg';
+                    type.addEventListener('change', async () => { c.type = type.value; await setStored('vipertab.gpa', courses); update(); });
+                    const credits = document.createElement('input'); credits.type = 'number'; credits.min = '0'; credits.step = '0.5'; credits.value = c.credits || 1; credits.className = 'gpa-credits';
+                    credits.addEventListener('input', async () => { c.credits = credits.value; await setStored('vipertab.gpa', courses); update(); });
+                    const x = document.createElement('button'); x.className = 'gpa-x'; x.textContent = '×';
+                    x.addEventListener('click', async () => { courses.splice(i, 1); await setStored('vipertab.gpa', courses); render(); });
+                    row.append(name, grade, type, credits, x);
+                    rows.appendChild(row);
+                });
+                update();
+            }
+            function update() {
+                const r = compute();
+                valW.textContent = r.w;
+                valU.textContent = r.u;
+            }
+            addBtn.addEventListener('click', async () => {
+                courses.push({ name: '', grade: 'A', type: 'Reg', credits: 1 });
+                await setStored('vipertab.gpa', courses);
+                render();
+            });
+            load();
+            return () => container.classList.remove('gpa-widget');
+        },
+    },
+    citation: {
+        id: 'citation', name: 'Citation Generator', icon: '📖', category: 'Productivity',
+        sizes: ['small', 'wide'],
+        render(container) {
+            container.classList.add('cite-widget');
+            container.innerHTML = `
+                <div class="widget-label">
+                    <span>Citation</span>
+                    <select class="cite-format">
+                        <option value="mla">MLA</option>
+                        <option value="apa">APA</option>
+                        <option value="chicago">Chicago</option>
+                    </select>
+                </div>
+                <input type="text" class="cite-input" placeholder="URL or DOI" spellcheck="false">
+                <button class="cite-go">Generate</button>
+                <div class="cite-output">Paste a URL or DOI, pick a style, hit Generate.</div>`;
+            const fmt = container.querySelector('.cite-format');
+            const input = container.querySelector('.cite-input');
+            const goBtn = container.querySelector('.cite-go');
+            const out = container.querySelector('.cite-output');
+            async function go() {
+                const q = input.value.trim();
+                if (!q) return;
+                out.textContent = 'Looking up…';
+                out.className = 'cite-output cite-loading';
+                try {
+                    // Wikipedia citoid: free, CORS-enabled
+                    const url = `https://en.wikipedia.org/api/rest_v1/data/citation/${fmt.value}/${encodeURIComponent(q)}`;
+                    const r = await fetch(url);
+                    if (!r.ok) throw new Error('citation not found');
+                    const data = await r.json();
+                    if (Array.isArray(data) && data[0]) {
+                        out.textContent = typeof data[0] === 'string' ? data[0] : (data[0].itemType ? JSON.stringify(data[0], null, 2) : String(data[0]));
+                    } else {
+                        out.textContent = JSON.stringify(data, null, 2);
+                    }
+                    out.className = 'cite-output cite-result';
+                    out.title = 'Click to copy';
+                    out.onclick = () => navigator.clipboard?.writeText(out.textContent);
+                } catch (e) {
+                    out.textContent = 'Could not generate. Check the URL/DOI and try again.';
+                    out.className = 'cite-output cite-error';
+                }
+            }
+            goBtn.addEventListener('click', go);
+            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+            return () => container.classList.remove('cite-widget');
+        },
+    },
+    flashcards: {
+        id: 'flashcards', name: 'Flashcards', icon: '🃏', category: 'Productivity',
+        sizes: ['small', 'tall'],
+        render(container) {
+            container.classList.add('fc-widget');
+            container.innerHTML = `
+                <div class="widget-label">
+                    <span>Flashcards</span>
+                    <div class="fc-actions">
+                        <span class="fc-count">0/0</span>
+                        <button class="fc-add" title="Add card">+</button>
+                    </div>
+                </div>
+                <div class="fc-card">
+                    <div class="fc-face fc-empty">Add a card to begin.</div>
+                </div>
+                <div class="fc-controls">
+                    <button class="fc-flip">Flip</button>
+                    <button class="fc-prev">‹ Prev</button>
+                    <button class="fc-next">Next ›</button>
+                </div>`;
+            const card = container.querySelector('.fc-card');
+            const face = container.querySelector('.fc-face');
+            const flipBtn = container.querySelector('.fc-flip');
+            const prevBtn = container.querySelector('.fc-prev');
+            const nextBtn = container.querySelector('.fc-next');
+            const addBtn = container.querySelector('.fc-add');
+            const countEl = container.querySelector('.fc-count');
+            let deck = [];
+            let idx = 0;
+            let showingFront = true;
+            async function load() { deck = await getStored('vipertab.flashcards', []); idx = 0; showingFront = true; render(); }
+            function render() {
+                if (deck.length === 0) {
+                    face.textContent = 'Add a card to begin.';
+                    face.className = 'fc-face fc-empty';
+                    countEl.textContent = '0/0';
+                    return;
+                }
+                if (idx >= deck.length) idx = 0;
+                if (idx < 0) idx = deck.length - 1;
+                const c = deck[idx];
+                face.textContent = showingFront ? c.front : c.back;
+                face.className = 'fc-face ' + (showingFront ? 'fc-front' : 'fc-back');
+                countEl.textContent = `${idx + 1}/${deck.length}`;
+            }
+            flipBtn.addEventListener('click', () => { showingFront = !showingFront; render(); });
+            card.addEventListener('click', () => { showingFront = !showingFront; render(); });
+            prevBtn.addEventListener('click', () => { idx--; showingFront = true; render(); });
+            nextBtn.addEventListener('click', () => { idx++; showingFront = true; render(); });
+            addBtn.addEventListener('click', async () => {
+                const front = window.prompt('Front of card:');
+                if (!front) return;
+                const back = window.prompt('Back of card:');
+                if (back == null) return;
+                deck.push({ front: front.trim(), back: back.trim() });
+                await setStored('vipertab.flashcards', deck);
+                idx = deck.length - 1; showingFront = true;
+                render();
+            });
+            load();
+            return () => container.classList.remove('fc-widget');
+        },
+    },
+
     uuid: {
         id: 'uuid', name: 'UUID Generator', icon: '#', category: 'Dev',
         sizes: ['small'],
@@ -1616,7 +2227,13 @@ const DEFAULT_LAYOUT_DEV = {
     slot1: 'hackernews', slot2: 'timestamps', slot3: 'status', slot4: 'scratchpad',
     slot5: 'encoder', slot6: 'jwt', slot7: 'hash', slot8: 'diff',
 };
-const DEFAULT_LAYOUT = IS_DEV_EDITION ? DEFAULT_LAYOUT_DEV : DEFAULT_LAYOUT_MAIN;
+const DEFAULT_LAYOUT_STUDENT = {
+    slot1: 'schoollinks', slot2: 'duedates', slot3: 'pomodoro', slot4: 'notebook',
+    slot5: 'todo', slot6: 'gpa', slot7: 'citation', slot8: 'visualizer',
+};
+const DEFAULT_LAYOUT = IS_DEV_EDITION ? DEFAULT_LAYOUT_DEV
+    : IS_STUDENT_EDITION ? DEFAULT_LAYOUT_STUDENT
+    : DEFAULT_LAYOUT_MAIN;
 
 const activeWidgets = {};   // slotId -> destroy fn
 
@@ -2144,19 +2761,17 @@ async function checkForUpdates() {
         const remote = await r.json();
         if (!remote) return;
 
-        const myEdition = IS_DEV_EDITION ? 'dev' : 'main';
-        const otherEdition = IS_DEV_EDITION ? 'main' : 'dev';
-        const myName = IS_DEV_EDITION ? 'ViperTab Dev' : 'ViperTab';
-        const otherName = IS_DEV_EDITION ? 'ViperTab' : 'ViperTab Dev';
+        const myEdition = EDITION_ID;
+        const myName = EDITION_LABEL[myEdition];
         const installed = chrome.runtime?.getManifest?.()?.version || '0.0.0';
 
         // Per-edition info, falling back to legacy flat schema for older repos
         const editions = remote.editions || {
-            main: { version: remote.version, url: remote.url, notes: remote.notes },
-            dev:  { version: remote.version, url: remote.url, notes: remote.notes },
+            main:    { version: remote.version, url: remote.url, notes: remote.notes },
+            dev:     { version: remote.version, url: remote.url, notes: remote.notes },
+            student: { version: remote.version, url: remote.url, notes: remote.notes },
         };
         const myInfo = editions[myEdition];
-        const otherInfo = editions[otherEdition];
 
         // Primary: own edition has a newer version
         if (myInfo?.version && compareVersions(myInfo.version, installed) > 0) {
@@ -2175,20 +2790,26 @@ async function checkForUpdates() {
             }
         }
 
-        // Secondary: the other edition has a newer version — informational only
-        if (otherInfo?.version && compareVersions(otherInfo.version, installed) > 0) {
+        // Secondary: any other edition is newer than installed — informational only
+        for (const otherEdition of ALL_EDITIONS) {
+            if (otherEdition === myEdition) continue;
+            const otherInfo = editions[otherEdition];
+            if (!otherInfo?.version) continue;
+            if (compareVersions(otherInfo.version, installed) <= 0) continue;
             const dismissed = await getStored(`vipertab.dismissed.${otherEdition}`);
-            if (otherInfo.version !== dismissed) {
-                showUpdateBanner({
-                    badge: otherEdition === 'dev' ? 'Dev' : 'New',
-                    secondary: true,
-                    title: `New ${otherName} v${otherInfo.version} dropped — try it`,
-                    url: otherInfo.url || remote.url,
-                    notes: otherInfo.notes,
-                    dismissKey: `vipertab.dismissed.${otherEdition}`,
-                    dismissValue: otherInfo.version,
-                });
-            }
+            if (otherInfo.version === dismissed) continue;
+            const otherName = EDITION_LABEL[otherEdition];
+            const badgeShort = { dev: 'Dev', student: 'Student', main: 'New' }[otherEdition] || 'New';
+            showUpdateBanner({
+                badge: badgeShort,
+                secondary: true,
+                title: `New ${otherName} v${otherInfo.version} dropped — try it`,
+                url: otherInfo.url || remote.url,
+                notes: otherInfo.notes,
+                dismissKey: `vipertab.dismissed.${otherEdition}`,
+                dismissValue: otherInfo.version,
+            });
+            return; // only show one secondary banner at a time
         }
     } catch { /* offline / repo not set up yet */ }
 }

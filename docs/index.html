@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>ViperTab — Apple Glass new tab page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="A macOS-inspired new tab page for Chromium-based browsers (Chrome, Edge, Brave, Arc, Opera, Vivaldi). Apple Glass UI, 16 customizable widgets, Spotlight search.">
+    <meta name="description" content="A macOS-inspired new tab page for Chromium-based browsers (Chrome, Edge, Brave, Opera, Vivaldi). Apple Glass UI, 20+ customizable widgets, Spotlight search.">
     <meta property="og:title" content="ViperTab">
     <meta property="og:description" content="Apple Glass new tab page with 16 customizable widgets — for any Chromium-based browser.">
     <meta property="og:image" content="https://raw.githubusercontent.com/ViperShard/ViperTab/main/icons/vipershard-logo.png">
@@ -325,6 +325,11 @@
             background: rgba(109, 213, 237, 0.08);
             border-color: rgba(109, 213, 237, 0.2);
         }
+        .edition-tag-student {
+            color: #b486e0;
+            background: rgba(180, 134, 224, 0.08);
+            border-color: rgba(180, 134, 224, 0.22);
+        }
         .edition h3 {
             font-size: 22px;
             font-weight: 400;
@@ -624,7 +629,7 @@
                         <span class="edition-version" data-edition-version="main">v—</span>
                     </div>
                     <h3>ViperTab</h3>
-                    <p>Apple Glass desktop with clock, weather, notes, calculator, world clocks, recently closed, sound visualizer, and the rest of the home pack — plus 16 widgets to swap freely.</p>
+                    <p>Apple Glass desktop with clock, weather, notes, calculator, world clocks, recently closed, sound visualizer, and the rest of the home pack — plus 20+ widgets to swap freely.</p>
                     <div class="edition-actions">
                         <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip" class="btn btn-primary edition-cta">
                             <span>↓</span><span>Download</span>
@@ -638,7 +643,7 @@
                         <span class="edition-version" data-edition-version="dev">v—</span>
                     </div>
                     <h3>ViperTab Dev</h3>
-                    <p>Terminal/btop aesthetic — solid panels, sharp borders, bracketed widget headers, dot-grid background, all-monospace. Multi-tab <strong>scratchpad code editor</strong>, <strong>line-by-line diff viewer</strong>, JWT decoder, hash generator (SHA-1/256/384/512), regex tester, JSON formatter, encoders, timestamps, UUID, and Hacker News.</p>
+                    <p>Terminal/btop aesthetic — solid panels, sharp borders, bracketed widget headers, dot-grid background, all-monospace. Multi-tab <strong>scratchpad code editor</strong>, <strong>diff viewer</strong>, JWT decoder, hash generator, regex tester, JSON formatter, encoders, timestamps, UUID, Hacker News.</p>
                     <div class="edition-actions">
                         <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip" class="btn btn-primary edition-cta">
                             <span>↓</span><span>Download</span>
@@ -646,10 +651,24 @@
                         <a href="#legacy-dev" class="edition-legacy">Older versions →</a>
                     </div>
                 </div>
+                <div class="edition">
+                    <div class="edition-header">
+                        <div class="edition-tag edition-tag-student">Student</div>
+                        <span class="edition-version" data-edition-version="student">v—</span>
+                    </div>
+                    <h3>ViperTab Student</h3>
+                    <p>Built for high-school workflows. <strong>Multi-tab markdown notebook that saves to your disk</strong>, school quick-links (Docs, Drive, Classroom, Khan, Quizlet…), due-dates calendar, <strong>GPA calculator</strong>, citation generator (MLA / APA / Chicago), flashcards, Pomodoro, to-do.</p>
+                    <div class="edition-actions">
+                        <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip" class="btn btn-primary edition-cta">
+                            <span>↓</span><span>Download</span>
+                        </a>
+                        <a href="#legacy-student" class="edition-legacy">Older versions →</a>
+                    </div>
+                </div>
             </div>
 
             <div class="hero-meta">
-                Free &nbsp;·&nbsp; Works in Chrome, Edge, Brave, Arc, Opera, Vivaldi &amp; other Chromium-based browsers
+                Free &nbsp;·&nbsp; Works in Chrome, Edge, Brave, Opera, Vivaldi &amp; other Chromium-based browsers
             </div>
         </div>
     </section>
@@ -754,6 +773,14 @@
             </div>
             <div class="version-list" data-edition-list="dev"><div class="version-loading">Loading…</div></div>
         </div>
+
+        <div class="version-edition" id="legacy-student">
+            <div class="version-edition-head">
+                <h3>ViperTab Student</h3>
+                <span class="version-current" data-edition-version="student">v—</span>
+            </div>
+            <div class="version-list" data-edition-list="student"><div class="version-loading">Loading…</div></div>
+        </div>
     </section>
 
     <section class="cta-band">
@@ -762,7 +789,7 @@
             <span>↓</span><span>Download v<span id="version-2">…</span></span>
         </a>
         <div style="margin-top: 18px; font-size: 13px; color: var(--text-faint);">
-            For Chrome, Edge, Brave, Arc, Opera, Vivaldi &amp; any Chromium browser.
+            For Chrome, Edge, Brave, Opera, Vivaldi &amp; any Chromium browser.
         </div>
     </section>
 
@@ -786,12 +813,14 @@
         fetch('https://raw.githubusercontent.com/ViperShard/ViperTab/main/version.json?t=' + Date.now())
             .then(r => r.json())
             .then(d => {
-                const main = d.editions?.main?.version || d.version || '—';
-                const dev  = d.editions?.dev?.version  || d.version || '—';
+                const main    = d.editions?.main?.version    || d.version || '—';
+                const dev     = d.editions?.dev?.version     || d.version || '—';
+                const student = d.editions?.student?.version || d.version || '—';
                 document.getElementById('version').textContent = main;
                 document.getElementById('version-2').textContent = main;
                 document.querySelectorAll('[data-edition-version="main"]').forEach(el => el.textContent = 'v' + main);
                 document.querySelectorAll('[data-edition-version="dev"]').forEach(el => el.textContent = 'v' + dev);
+                document.querySelectorAll('[data-edition-version="student"]').forEach(el => el.textContent = 'v' + student);
             })
             .catch(() => {
                 ['version', 'version-2'].forEach(id => document.getElementById(id).textContent = '—');
@@ -839,35 +868,35 @@
         fetch('https://api.github.com/repos/ViperShard/ViperTab/releases?per_page=50')
             .then(r => r.json())
             .then(releases => {
-                const mainList = document.querySelector('[data-edition-list="main"]');
-                const devList  = document.querySelector('[data-edition-list="dev"]');
-                mainList.innerHTML = '';
-                devList.innerHTML = '';
+                const lists = {
+                    main:    { el: document.querySelector('[data-edition-list="main"]'),    asset: 'ViperTab.zip',         label: 'ViperTab',         seen: 0 },
+                    dev:     { el: document.querySelector('[data-edition-list="dev"]'),     asset: 'ViperTabDev.zip',      label: 'ViperTab Dev',     seen: 0 },
+                    student: { el: document.querySelector('[data-edition-list="student"]'), asset: 'ViperTabStudent.zip',  label: 'ViperTab Student', seen: 0 },
+                };
+                Object.values(lists).forEach(L => L.el.innerHTML = '');
                 if (!Array.isArray(releases) || releases.length === 0) {
-                    mainList.innerHTML = '<div class="version-error">No releases yet.</div>';
-                    devList.innerHTML  = '<div class="version-error">No releases yet.</div>';
+                    Object.values(lists).forEach(L => L.el.innerHTML = '<div class="version-error">No releases yet.</div>');
                     return;
                 }
-                let mainSeen = 0, devSeen = 0;
                 releases.forEach(rel => {
-                    const mainAsset = (rel.assets || []).find(a => a.name === 'ViperTab.zip');
-                    const devAsset  = (rel.assets || []).find(a => a.name === 'ViperTabDev.zip');
-                    if (mainAsset) {
-                        mainList.appendChild(buildVersionItem(rel, mainSeen === 0, mainAsset));
-                        mainSeen++;
-                    }
-                    if (devAsset) {
-                        devList.appendChild(buildVersionItem(rel, devSeen === 0, devAsset));
-                        devSeen++;
-                    }
+                    Object.values(lists).forEach(L => {
+                        const asset = (rel.assets || []).find(a => a.name === L.asset);
+                        if (asset) {
+                            L.el.appendChild(buildVersionItem(rel, L.seen === 0, asset));
+                            L.seen++;
+                        }
+                    });
                 });
-                if (mainSeen === 0) mainList.innerHTML = '<div class="version-error">No ViperTab releases yet.</div>';
-                if (devSeen === 0)  devList.innerHTML  = '<div class="version-error">No ViperTab Dev releases yet.</div>';
+                Object.values(lists).forEach(L => {
+                    if (L.seen === 0) L.el.innerHTML = `<div class="version-error">No ${L.label} releases yet.</div>`;
+                });
             })
             .catch(() => {
                 const errMsg = '<div class="version-error">Could not load releases. <a href="https://github.com/ViperShard/ViperTab/releases">View on GitHub</a></div>';
-                document.querySelector('[data-edition-list="main"]').innerHTML = errMsg;
-                document.querySelector('[data-edition-list="dev"]').innerHTML = errMsg;
+                ['main', 'dev', 'student'].forEach(e => {
+                    const el = document.querySelector(`[data-edition-list="${e}"]`);
+                    if (el) el.innerHTML = errMsg;
+                });
             });
     </script>
 </body>
