@@ -1168,6 +1168,281 @@ const WIDGET_LIBRARY = {
             return () => container.classList.remove('ts-widget');
         },
     },
+    scratchpad: {
+        id: 'scratchpad', name: 'Scratchpad (multi-tab editor)', icon: '⌨', category: 'Dev',
+        sizes: ['tall', 'wide'],
+        render(container) {
+            container.classList.add('scratch-widget');
+            container.innerHTML = `
+                <div class="widget-label scratch-bar">
+                    <div class="scratch-tabs"></div>
+                    <div class="scratch-actions">
+                        <button class="scratch-btn scratch-new" title="New tab">+</button>
+                    </div>
+                </div>
+                <textarea class="scratch-area" placeholder="Start typing… (Tab indents)" spellcheck="false"></textarea>`;
+            const tabs = container.querySelector('.scratch-tabs');
+            const area = container.querySelector('.scratch-area');
+            const newId = () => Math.random().toString(36).slice(2, 9);
+            let state = { files: [], activeId: null };
+            let saveTimer;
+            const save = () => {
+                clearTimeout(saveTimer);
+                saveTimer = setTimeout(() => setStored('vipertab.scratchpad', state), 250);
+            };
+            const active = () => state.files.find(f => f.id === state.activeId) || state.files[0];
+            function render() {
+                tabs.innerHTML = '';
+                state.files.forEach(f => {
+                    const tab = document.createElement('div');
+                    tab.className = 'scratch-tab' + (f.id === state.activeId ? ' active' : '');
+                    const name = document.createElement('span');
+                    name.className = 'scratch-tab-name';
+                    name.textContent = f.name;
+                    name.title = 'Double-click to rename';
+                    name.addEventListener('dblclick', (e) => {
+                        e.stopPropagation();
+                        const v = window.prompt('Rename tab:', f.name);
+                        if (v !== null) { f.name = v.trim() || 'untitled'; save(); render(); }
+                    });
+                    const close = document.createElement('button');
+                    close.className = 'scratch-tab-close';
+                    close.textContent = '×';
+                    close.title = 'Close';
+                    close.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (state.files.length === 1) return;
+                        const idx = state.files.findIndex(x => x.id === f.id);
+                        state.files.splice(idx, 1);
+                        if (state.activeId === f.id) state.activeId = state.files[Math.max(0, idx - 1)].id;
+                        save(); render();
+                    });
+                    tab.append(name, close);
+                    tab.addEventListener('click', () => { state.activeId = f.id; save(); render(); });
+                    tabs.appendChild(tab);
+                });
+                const cur = active();
+                area.value = cur ? cur.content : '';
+            }
+            (async () => {
+                state = await getStored('vipertab.scratchpad', null) || { files: [], activeId: null };
+                if (!state.files || state.files.length === 0) {
+                    const f = { id: newId(), name: 'scratch.txt', content: '' };
+                    state = { files: [f], activeId: f.id };
+                }
+                render();
+            })();
+            area.addEventListener('input', () => {
+                const cur = active(); if (!cur) return;
+                cur.content = area.value;
+                save();
+            });
+            area.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    const start = area.selectionStart, end = area.selectionEnd;
+                    if (e.shiftKey) {
+                        // Outdent: remove up to 2 leading spaces from each selected line
+                        const before = area.value.slice(0, start);
+                        const lineStart = before.lastIndexOf('\n') + 1;
+                        const block = area.value.slice(lineStart, end);
+                        const dedented = block.replace(/^(  ?)/gm, '');
+                        area.value = area.value.slice(0, lineStart) + dedented + area.value.slice(end);
+                        area.selectionStart = lineStart;
+                        area.selectionEnd = lineStart + dedented.length;
+                    } else {
+                        area.value = area.value.slice(0, start) + '  ' + area.value.slice(end);
+                        area.selectionStart = area.selectionEnd = start + 2;
+                    }
+                    const cur = active(); if (cur) { cur.content = area.value; save(); }
+                }
+            });
+            container.querySelector('.scratch-new').addEventListener('click', () => {
+                const f = { id: newId(), name: `scratch-${state.files.length + 1}.txt`, content: '' };
+                state.files.push(f);
+                state.activeId = f.id;
+                save(); render();
+                area.focus();
+            });
+            return () => container.classList.remove('scratch-widget');
+        },
+    },
+    jwt: {
+        id: 'jwt', name: 'JWT Decoder', icon: '🔓', category: 'Dev',
+        sizes: ['small', 'tall'],
+        render(container) {
+            container.classList.add('jwt-widget');
+            container.innerHTML = `
+                <div class="widget-label"><span>JWT Decoder</span></div>
+                <textarea class="jwt-input" placeholder="Paste JWT here…" spellcheck="false"></textarea>
+                <div class="jwt-output"></div>`;
+            const input = container.querySelector('.jwt-input');
+            const output = container.querySelector('.jwt-output');
+            function decode64url(s) {
+                const pad = (4 - (s.length % 4)) % 4;
+                const b64 = s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat(pad);
+                return decodeURIComponent(escape(atob(b64)));
+            }
+            function setError(msg) {
+                output.innerHTML = '';
+                const div = document.createElement('div');
+                div.className = 'jwt-error';
+                div.textContent = msg;
+                output.appendChild(div);
+            }
+            function addSection(title, json) {
+                const sec = document.createElement('div'); sec.className = 'jwt-section';
+                const lbl = document.createElement('div'); lbl.className = 'jwt-label'; lbl.textContent = title;
+                const pre = document.createElement('pre'); pre.className = 'jwt-json';
+                pre.textContent = JSON.stringify(json, null, 2);
+                sec.append(lbl, pre);
+                output.appendChild(sec);
+            }
+            function decode() {
+                const v = input.value.trim();
+                if (!v) { output.innerHTML = ''; return; }
+                const parts = v.split('.');
+                if (parts.length < 2) return setError('Not a JWT (need at least 2 dot-separated parts).');
+                let header, payload;
+                try { header = JSON.parse(decode64url(parts[0])); }
+                catch (e) { return setError('Header decode error: ' + e.message); }
+                try { payload = JSON.parse(decode64url(parts[1])); }
+                catch (e) { return setError('Payload decode error: ' + e.message); }
+                output.innerHTML = '';
+                if (typeof payload.exp === 'number') {
+                    const expMs = payload.exp * 1000;
+                    const now = Date.now();
+                    const expired = expMs < now;
+                    const delta = Math.abs(expMs - now);
+                    const days = Math.floor(delta / 86400000);
+                    const hours = Math.floor((delta % 86400000) / 3600000);
+                    const mins = Math.floor((delta % 3600000) / 60000);
+                    const fmt = days > 0 ? `${days}d ${hours}h` : hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                    const exp = document.createElement('div');
+                    exp.className = 'jwt-exp ' + (expired ? 'jwt-expired' : 'jwt-valid');
+                    exp.textContent = expired ? `⚠ Expired ${fmt} ago` : `✓ Expires in ${fmt}`;
+                    output.appendChild(exp);
+                }
+                addSection('Header', header);
+                addSection('Payload', payload);
+                if (parts[2]) {
+                    const sig = document.createElement('div'); sig.className = 'jwt-sig';
+                    sig.textContent = `Signature present (${parts[2].length} chars) — verification requires the secret/key.`;
+                    output.appendChild(sig);
+                }
+            }
+            input.addEventListener('input', decode);
+            return () => container.classList.remove('jwt-widget');
+        },
+    },
+    hash: {
+        id: 'hash', name: 'Hash Generator', icon: '#', category: 'Dev',
+        sizes: ['small', 'tall'],
+        render(container) {
+            container.classList.add('hash-widget');
+            container.innerHTML = `
+                <div class="widget-label"><span>Hash Generator</span></div>
+                <textarea class="hash-input" placeholder="Input text…" spellcheck="false"></textarea>
+                <div class="hash-rows"></div>`;
+            const input = container.querySelector('.hash-input');
+            const rows = container.querySelector('.hash-rows');
+            const algos = ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
+            const cells = {};
+            algos.forEach(a => {
+                const row = document.createElement('div'); row.className = 'hash-row';
+                const lbl = document.createElement('div'); lbl.className = 'hash-algo'; lbl.textContent = a;
+                const val = document.createElement('div'); val.className = 'hash-val'; val.textContent = '—'; val.title = 'Click to copy';
+                val.addEventListener('click', () => {
+                    if (val.textContent && val.textContent !== '—') navigator.clipboard?.writeText(val.textContent);
+                });
+                row.append(lbl, val);
+                rows.appendChild(row);
+                cells[a] = val;
+            });
+            const enc = new TextEncoder();
+            const toHex = (buf) => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+            let token = 0;
+            async function compute() {
+                const v = input.value;
+                if (!v) { algos.forEach(a => cells[a].textContent = '—'); return; }
+                const my = ++token;
+                const data = enc.encode(v);
+                for (const a of algos) {
+                    try {
+                        const buf = await crypto.subtle.digest(a, data);
+                        if (my !== token) return;
+                        cells[a].textContent = toHex(buf);
+                    } catch { cells[a].textContent = 'Error'; }
+                }
+            }
+            input.addEventListener('input', compute);
+            return () => container.classList.remove('hash-widget');
+        },
+    },
+    diff: {
+        id: 'diff', name: 'Diff Viewer', icon: '⇆', category: 'Dev',
+        sizes: ['wide', 'tall'],
+        render(container) {
+            container.classList.add('diff-widget');
+            container.innerHTML = `
+                <div class="widget-label"><span>Diff</span></div>
+                <div class="diff-inputs">
+                    <textarea class="diff-a" placeholder="Original" spellcheck="false"></textarea>
+                    <textarea class="diff-b" placeholder="Modified" spellcheck="false"></textarea>
+                </div>
+                <div class="diff-output"></div>`;
+            const a = container.querySelector('.diff-a');
+            const b = container.querySelector('.diff-b');
+            const out = container.querySelector('.diff-output');
+            // Line-based LCS diff
+            function lineDiff(A, B) {
+                const m = A.length, n = B.length;
+                const lcs = Array.from({ length: m + 1 }, () => new Uint16Array(n + 1));
+                for (let i = 1; i <= m; i++) {
+                    for (let j = 1; j <= n; j++) {
+                        if (A[i-1] === B[j-1]) lcs[i][j] = lcs[i-1][j-1] + 1;
+                        else lcs[i][j] = Math.max(lcs[i-1][j], lcs[i][j-1]);
+                    }
+                }
+                const r = [];
+                let i = m, j = n;
+                while (i > 0 || j > 0) {
+                    if (i > 0 && j > 0 && A[i-1] === B[j-1]) { r.unshift({ t: 'eq', l: A[i-1] }); i--; j--; }
+                    else if (j > 0 && (i === 0 || lcs[i][j-1] >= lcs[i-1][j])) { r.unshift({ t: 'add', l: B[j-1] }); j--; }
+                    else if (i > 0) { r.unshift({ t: 'del', l: A[i-1] }); i--; }
+                }
+                return r;
+            }
+            function update() {
+                const linesA = a.value.split('\n');
+                const linesB = b.value.split('\n');
+                if (a.value === '' && b.value === '') { out.innerHTML = ''; return; }
+                const d = lineDiff(linesA, linesB);
+                out.innerHTML = '';
+                const adds = d.filter(x => x.t === 'add').length;
+                const dels = d.filter(x => x.t === 'del').length;
+                const summary = document.createElement('div');
+                summary.className = 'diff-summary';
+                const ac = document.createElement('span'); ac.className = 'diff-add-count'; ac.textContent = `+${adds}`;
+                const dc = document.createElement('span'); dc.className = 'diff-del-count'; dc.textContent = `−${dels}`;
+                summary.append(ac, document.createTextNode('  '), dc);
+                out.appendChild(summary);
+                d.forEach(line => {
+                    const div = document.createElement('div');
+                    div.className = `diff-line diff-${line.t}`;
+                    const sign = document.createElement('span'); sign.className = 'diff-sign';
+                    sign.textContent = line.t === 'add' ? '+' : line.t === 'del' ? '−' : ' ';
+                    const text = document.createElement('span'); text.className = 'diff-text';
+                    text.textContent = line.l;
+                    div.append(sign, text);
+                    out.appendChild(div);
+                });
+            }
+            a.addEventListener('input', update);
+            b.addEventListener('input', update);
+            return () => container.classList.remove('diff-widget');
+        },
+    },
     uuid: {
         id: 'uuid', name: 'UUID Generator', icon: '#', category: 'Dev',
         sizes: ['small'],
@@ -1338,8 +1613,8 @@ const DEFAULT_LAYOUT_MAIN = {
     slot5: 'notes', slot6: 'recent',  slot7: 'worldclocks', slot8: 'visualizer',
 };
 const DEFAULT_LAYOUT_DEV = {
-    slot1: 'hackernews', slot2: 'status', slot3: 'timestamps', slot4: 'json',
-    slot5: 'encoder', slot6: 'regex', slot7: 'uuid', slot8: 'visualizer',
+    slot1: 'hackernews', slot2: 'timestamps', slot3: 'status', slot4: 'scratchpad',
+    slot5: 'encoder', slot6: 'jwt', slot7: 'hash', slot8: 'diff',
 };
 const DEFAULT_LAYOUT = IS_DEV_EDITION ? DEFAULT_LAYOUT_DEV : DEFAULT_LAYOUT_MAIN;
 
