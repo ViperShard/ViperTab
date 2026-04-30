@@ -1,27 +1,27 @@
 {
-  "version": "1.4.5",
+  "version": "1.4.6",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Banner system fixes: every banner now shows an edition-colored chip (DEFAULT green / DEV cyan / STUDENT purple / ZEN gold) so it's instantly clear which edition the update is for. Also fixed a logic bug that prevented secondary 'try the X edition' banners from firing across editions with independent version lines (Main on 1.4.x couldn't see Zen 1.0.x banners and vice versa).\n",
+  "notes": "Clock widget can now switch between Digital and Analog from Control Center → Clock Style. Analog face is minimal: 60 minute marks (cardinals in gold, hours in white, minutes faint), white hour and minute hands, gold seconds hand and center dot. Seconds hand sweeps smoothly via requestAnimationFrame — no ticking. Scales huge in Zen edition; fits naturally in any other slot.\n",
   "editions": {
     "main": {
-      "version": "1.4.5",
+      "version": "1.4.6",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Banner system fixes: every banner now shows an edition-colored chip (DEFAULT green / DEV cyan / STUDENT purple / ZEN gold) so it's instantly clear which edition the update is for. Also fixed a logic bug that prevented secondary 'try the X edition' banners from firing across editions with independent version lines (Main on 1.4.x couldn't see Zen 1.0.x banners and vice versa).\n"
+      "notes": "Clock widget can now switch between Digital and Analog from Control Center → Clock Style. Analog face is minimal: 60 minute marks (cardinals in gold, hours in white, minutes faint), white hour and minute hands, gold seconds hand and center dot. Seconds hand sweeps smoothly via requestAnimationFrame — no ticking. Scales huge in Zen edition; fits naturally in any other slot.\n"
     },
     "dev": {
-      "version": "1.4.5",
+      "version": "1.4.6",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Banner system fixes: every banner now shows an edition-colored chip (DEFAULT green / DEV cyan / STUDENT purple / ZEN gold) so it's instantly clear which edition the update is for. Also fixed a logic bug that prevented secondary 'try the X edition' banners from firing across editions with independent version lines (Main on 1.4.x couldn't see Zen 1.0.x banners and vice versa).\n"
+      "notes": "Clock widget can now switch between Digital and Analog from Control Center → Clock Style. Analog face is minimal: 60 minute marks (cardinals in gold, hours in white, minutes faint), white hour and minute hands, gold seconds hand and center dot. Seconds hand sweeps smoothly via requestAnimationFrame — no ticking. Scales huge in Zen edition; fits naturally in any other slot.\n"
     },
     "student": {
-      "version": "1.0.2",
+      "version": "1.0.3",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip",
-      "notes": "Banner system fixes: every banner now shows an edition-colored chip (DEFAULT green / DEV cyan / STUDENT purple / ZEN gold) so it's instantly clear which edition the update is for. Also fixed a logic bug that prevented secondary 'try the X edition' banners from firing across editions with independent version lines (Main on 1.4.x couldn't see Zen 1.0.x banners and vice versa).\n"
+      "notes": "Clock widget can now switch between Digital and Analog from Control Center → Clock Style. Analog face is minimal: 60 minute marks (cardinals in gold, hours in white, minutes faint), white hour and minute hands, gold seconds hand and center dot. Seconds hand sweeps smoothly via requestAnimationFrame — no ticking. Scales huge in Zen edition; fits naturally in any other slot.\n"
     },
     "zen": {
-      "version": "1.0.2",
+      "version": "1.0.3",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip",
-      "notes": "Banner system fixes: every banner now shows an edition-colored chip (DEFAULT green / DEV cyan / STUDENT purple / ZEN gold) so it's instantly clear which edition the update is for. Also fixed a logic bug that prevented secondary 'try the X edition' banners from firing across editions with independent version lines (Main on 1.4.x couldn't see Zen 1.0.x banners and vice versa).\n"
+      "notes": "Clock widget can now switch between Digital and Analog from Control Center → Clock Style. Analog face is minimal: 60 minute marks (cardinals in gold, hours in white, minutes faint), white hour and minute hands, gold seconds hand and center dot. Seconds hand sweeps smoothly via requestAnimationFrame — no ticking. Scales huge in Zen edition; fits naturally in any other slot.\n"
     }
   }
 }
