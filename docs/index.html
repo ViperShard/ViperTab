@@ -334,6 +334,26 @@
             align-self: flex-start;
             margin-top: 6px;
         }
+        .edition-actions {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+        .edition-legacy {
+            font-size: 13px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+            padding-bottom: 1px;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .edition-legacy:hover {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+        }
         .edition-header {
             display: flex;
             align-items: center;
@@ -578,7 +598,7 @@
         <div class="nav-links">
             <a href="#features">Features</a>
             <a href="#editions">Editions</a>
-            <a href="#versions">Versions</a>
+            <a href="#legacy">Legacy</a>
             <a href="#install">Install</a>
             <a href="https://github.com/ViperShard/ViperTab">GitHub</a>
         </div>
@@ -667,9 +687,12 @@
                 </div>
                 <h3>ViperTab</h3>
                 <p>Apple Glass desktop with clock, weather, notes, calculator, world clocks, recently closed, sound visualizer, and the rest of the home pack — plus 16 widgets to swap freely.</p>
-                <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip" class="btn btn-primary edition-cta">
-                    <span>↓</span><span>Download</span>
-                </a>
+                <div class="edition-actions">
+                    <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip" class="btn btn-primary edition-cta">
+                        <span>↓</span><span>Download</span>
+                    </a>
+                    <a href="#legacy-main" class="edition-legacy">Older versions →</a>
+                </div>
             </div>
             <div class="edition">
                 <div class="edition-header">
@@ -678,9 +701,12 @@
                 </div>
                 <h3>ViperTab Dev</h3>
                 <p>Terminal/btop aesthetic — solid panels, sharp borders, bracketed widget headers, dot-grid background, all-monospace. Multi-tab <strong>scratchpad code editor</strong>, <strong>line-by-line diff viewer</strong>, JWT decoder, hash generator (SHA-1/256/384/512), regex tester, JSON formatter, encoders, timestamps, UUID, and Hacker News.</p>
-                <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip" class="btn btn-primary edition-cta">
-                    <span>↓</span><span>Download</span>
-                </a>
+                <div class="edition-actions">
+                    <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip" class="btn btn-primary edition-cta">
+                        <span>↓</span><span>Download</span>
+                    </a>
+                    <a href="#legacy-dev" class="edition-legacy">Older versions →</a>
+                </div>
             </div>
         </div>
     </section>
@@ -714,12 +740,12 @@
         </div>
     </section>
 
-    <section class="body" id="versions">
-        <div class="section-eyebrow">Version History</div>
+    <section class="body" id="legacy">
+        <div class="section-eyebrow">Legacy &amp; Version History</div>
         <h2 class="section-title">Every release, by edition.</h2>
-        <p class="section-lede">Each edition has its own version line. Pinning to an older build? Every zip stays downloadable forever — newest first.</p>
+        <p class="section-lede">Each edition has its own version line. Pinning to an older build? Every zip stays downloadable forever — newest at the top of each list.</p>
 
-        <div class="version-edition">
+        <div class="version-edition" id="legacy-main">
             <div class="version-edition-head">
                 <h3>ViperTab</h3>
                 <span class="version-current" data-edition-version="main">v—</span>
@@ -727,7 +753,7 @@
             <div class="version-list" data-edition-list="main"><div class="version-loading">Loading…</div></div>
         </div>
 
-        <div class="version-edition">
+        <div class="version-edition" id="legacy-dev">
             <div class="version-edition-head">
                 <h3>ViperTab Dev</h3>
                 <span class="version-current" data-edition-version="dev">v—</span>
