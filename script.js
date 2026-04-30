@@ -33,7 +33,7 @@ const PREFS = {
     timeFormat: '24',
     tempUnit: 'fahrenheit',
     theme: IS_DEV_EDITION ? 'dev' : 'glass',
-    wallpaperId: IS_DEV_EDITION ? 'midnight' : 'sequoia',
+    wallpaperId: IS_DEV_EDITION ? 'mono-black' : 'sequoia',
     vizType: 'bars',
     vizPalette: IS_DEV_EDITION ? 'mono' : 'aurora',
 };

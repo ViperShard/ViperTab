@@ -51,39 +51,223 @@
     --canvas-border: rgba(255, 255, 255, 0.05);
 }
 
-/* Dev theme — modern dev tool aesthetic, gold accent (matches ViperShard brand) */
+/* === Dev theme — terminal / btop aesthetic === */
 [data-theme="dev"] {
-    --glass-bg: rgba(20, 22, 28, 0.58);
-    --glass-bg-strong: rgba(26, 28, 36, 0.82);
-    --glass-border: rgba(255, 255, 255, 0.07);
-    --glass-border-soft: rgba(255, 255, 255, 0.04);
-    --text: rgba(232, 232, 240, 0.96);
-    --text-dim: rgba(232, 232, 240, 0.58);
-    --text-faint: rgba(232, 232, 240, 0.32);
-    --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.5);
-    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.65);
-    --inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    --canvas-bg: rgba(0, 0, 0, 0.45);
-    --canvas-border: rgba(201, 163, 107, 0.12);
+    --glass-bg: #0d1015;
+    --glass-bg-strong: #141821;
+    --glass-border: rgba(201, 163, 107, 0.32);
+    --glass-border-soft: rgba(201, 163, 107, 0.14);
+    --text: rgba(232, 232, 240, 0.94);
+    --text-dim: rgba(232, 232, 240, 0.6);
+    --text-faint: rgba(232, 232, 240, 0.35);
+    --shadow-md: none;
+    --shadow-lg: none;
+    --inner-glow: none;
+    --canvas-bg: #050608;
+    --canvas-border: rgba(201, 163, 107, 0.18);
     --accent: #c9a36b;
-    --radius-lg: 14px;
-    --radius-md: 10px;
-    --radius-sm: 6px;
+    --accent-2: #6dd5ed;
+    --radius-lg: 4px;
+    --radius-md: 3px;
+    --radius-sm: 2px;
+}
+
+/* Dot-grid wallpaper — terminal feel regardless of selected wallpaper */
+[data-theme="dev"] .wallpaper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle at 1px 1px, rgba(201, 163, 107, 0.06) 1px, transparent 0);
+    background-size: 32px 32px;
+    background-attachment: fixed;
+}
+[data-theme="dev"] body {
+    font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace;
+}
+
+/* Menu bar: solid black-ish, gold accents */
+[data-theme="dev"] .menu-bar {
+    background: rgba(7, 9, 12, 0.96) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-bottom: 1px solid var(--glass-border);
+    font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace;
+}
+[data-theme="dev"] .menu-clock { color: var(--accent); }
+[data-theme="dev"] .menu-item.bold { color: var(--accent); }
+
+/* Widgets: solid panels, sharp corners, btop-style bracketed headers */
+[data-theme="dev"] .widget {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--glass-border);
+    border-radius: 4px;
+    box-shadow: none;
+    padding: 0 14px 12px;
+    will-change: auto;
+}
+[data-theme="dev"] .widget:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 16px rgba(201, 163, 107, 0.08);
 }
 [data-theme="dev"] .widget-label {
-    font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace;
+    margin: 0 -14px 12px;
+    padding: 7px 12px 7px;
+    background: rgba(201, 163, 107, 0.06);
+    border-bottom: 1px solid var(--glass-border-soft);
     color: var(--accent);
-    font-weight: 500;
-}
-[data-theme="dev"] .menu-bar {
-    background: rgba(14, 16, 22, 0.78);
-    border-bottom-color: rgba(201, 163, 107, 0.1);
-}
-[data-theme="dev"] .menu-clock {
     font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace;
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+[data-theme="dev"] .widget-label > span:first-child::before {
+    content: '─[ ';
+    color: var(--glass-border);
+    letter-spacing: 0;
+}
+[data-theme="dev"] .widget-label > span:first-child::after {
+    content: ' ]──';
+    color: var(--glass-border);
+    letter-spacing: 0;
+}
+
+/* Dock: solid panel */
+[data-theme="dev"] .dock {
+    background: var(--glass-bg-strong);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--glass-border);
+    border-radius: 4px;
+    box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.5);
+}
+[data-theme="dev"] .dock-item {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid var(--glass-border-soft);
+    border-radius: 4px;
+}
+[data-theme="dev"] .dock-item:hover {
+    background: rgba(201, 163, 107, 0.12) !important;
+    border-color: var(--accent);
+}
+
+/* Spotlight: terminal-style with > prompt */
+[data-theme="dev"] .spotlight-box {
+    background: var(--glass-bg-strong);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    box-shadow: 0 0 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(201, 163, 107, 0.18);
+}
+[data-theme="dev"] #spotlight-input {
+    font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace !important;
+    font-size: 18px !important;
+    color: var(--text);
+}
+[data-theme="dev"] #spotlight-results li.selected,
+[data-theme="dev"] #spotlight-results li:hover {
+    background: rgba(201, 163, 107, 0.14);
+}
+
+/* Settings + dropdown menus: solid + sharp */
+[data-theme="dev"] .settings-box,
+[data-theme="dev"] .dropdown-menu,
+[data-theme="dev"] .info-box {
+    background: var(--glass-bg-strong);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+}
+[data-theme="dev"] .menu-row:hover {
+    background: rgba(201, 163, 107, 0.18);
     color: var(--accent);
 }
-[data-theme="dev"] .menu-item.bold { color: var(--accent); }
+
+/* Form controls: solid dark, monospace */
+[data-theme="dev"] input[type="text"],
+[data-theme="dev"] input[type="url"],
+[data-theme="dev"] input[type="email"],
+[data-theme="dev"] input[type="search"],
+[data-theme="dev"] input[type="number"],
+[data-theme="dev"] textarea,
+[data-theme="dev"] select {
+    background-color: rgba(7, 9, 12, 0.85) !important;
+    border-radius: 3px !important;
+    font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace !important;
+}
+[data-theme="dev"] input:focus,
+[data-theme="dev"] textarea:focus,
+[data-theme="dev"] select:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px rgba(201, 163, 107, 0.18) !important;
+}
+
+/* Inline buttons (widget-internal): solid, monospace */
+[data-theme="dev"] .scratch-btn,
+[data-theme="dev"] .json-btn,
+[data-theme="dev"] .enc-btn,
+[data-theme="dev"] .ts-now,
+[data-theme="dev"] .uuid-btn,
+[data-theme="dev"] .pomo-btn,
+[data-theme="dev"] .sw-btn,
+[data-theme="dev"] .dice-roll,
+[data-theme="dev"] .viz-btn {
+    background: rgba(7, 9, 12, 0.85) !important;
+    border: 1px solid var(--glass-border-soft) !important;
+    border-radius: 3px !important;
+    color: var(--text) !important;
+    font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace !important;
+}
+[data-theme="dev"] .scratch-btn:hover,
+[data-theme="dev"] .json-btn:hover,
+[data-theme="dev"] .enc-btn:hover,
+[data-theme="dev"] .ts-now:hover,
+[data-theme="dev"] .uuid-btn:hover,
+[data-theme="dev"] .sw-btn:hover {
+    background: rgba(201, 163, 107, 0.12) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+}
+
+/* Scratchpad tabs in dev: terminal feel */
+[data-theme="dev"] .scratch-tab {
+    border-radius: 3px 3px 0 0;
+    background: rgba(7, 9, 12, 0.85);
+}
+[data-theme="dev"] .scratch-tab.active {
+    background: var(--glass-bg);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* btop-style bar fills (status widget) */
+[data-theme="dev"] .sys-bar {
+    background: #050608;
+    border: 1px solid var(--glass-border-soft);
+    border-radius: 2px;
+}
+
+/* Calc keys: square/rectangular not circular */
+[data-theme="dev"] .calc-keys button {
+    border-radius: 3px !important;
+    aspect-ratio: auto;
+    background: rgba(7, 9, 12, 0.85) !important;
+    border-color: var(--glass-border-soft) !important;
+    font-family: ui-monospace, "JetBrains Mono", monospace !important;
+}
+[data-theme="dev"] .calc-keys button.op {
+    background: rgba(201, 163, 107, 0.6) !important;
+    color: #0a0c10 !important;
+}
+[data-theme="dev"] .calc-display {
+    font-family: ui-monospace, "JetBrains Mono", monospace !important;
+    color: var(--accent);
+}
 
 body {
     margin: 0;

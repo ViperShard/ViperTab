@@ -335,6 +335,89 @@
             margin-top: 6px;
         }
 
+        /* === Version history === */
+        .version-list {
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid var(--line);
+        }
+        .version-item {
+            padding: 26px 0;
+            border-bottom: 1px solid var(--line);
+        }
+        .version-head {
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .version-tag {
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            font-size: 19px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+        .version-date {
+            font-size: 13px;
+            color: var(--text-dim);
+            font-variant-numeric: tabular-nums;
+        }
+        .version-badge {
+            margin-left: auto;
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: var(--text-faint);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--line);
+        }
+        .version-item.version-latest .version-badge {
+            color: var(--gold);
+            background: var(--gold-soft);
+            border-color: rgba(201, 163, 107, 0.22);
+        }
+        .version-notes {
+            font-size: 14.5px;
+            color: var(--text-dim);
+            line-height: 1.65;
+            margin-bottom: 14px;
+            white-space: pre-wrap;
+            max-width: 760px;
+        }
+        .version-downloads {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .version-download {
+            font-size: 13px;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--line);
+            border-radius: 7px;
+            color: var(--text);
+            text-decoration: none;
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            transition: border-color 0.15s, color 0.15s;
+        }
+        .version-download:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+        .version-loading,
+        .version-error {
+            color: var(--text-faint);
+            padding: 24px 0;
+            text-align: center;
+            font-size: 14px;
+        }
+        .version-error a { color: var(--gold); }
+
         /* === Install grid === */
         .install-grid {
             display: grid;
@@ -454,6 +537,7 @@
         <div class="nav-links">
             <a href="#features">Features</a>
             <a href="#editions">Editions</a>
+            <a href="#versions">Versions</a>
             <a href="#install">Install</a>
             <a href="https://github.com/ViperShard/ViperTab">GitHub</a>
         </div>
@@ -583,6 +667,14 @@
         </div>
     </section>
 
+    <section class="body" id="versions">
+        <div class="section-eyebrow">Version History</div>
+        <h2 class="section-title">All releases.</h2>
+        <p class="section-lede">Pinning to an older version, or just want to see what changed? Every release stays downloadable forever — newest first.</p>
+
+        <div id="version-list" class="version-list"><div class="version-loading">Loading…</div></div>
+    </section>
+
     <section class="cta-band">
         <h2>Ready to upgrade every blank tab?</h2>
         <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip" class="btn btn-primary">
@@ -608,6 +700,7 @@
     </footer>
 
     <script>
+        // Show the latest version in hero + CTA band
         fetch('https://raw.githubusercontent.com/ViperShard/ViperTab/main/version.json?t=' + Date.now())
             .then(r => r.json())
             .then(d => {
@@ -617,6 +710,58 @@
             .catch(() => {
                 document.getElementById('version').textContent = '—';
                 document.getElementById('version-2').textContent = '—';
+            });
+
+        // Fetch all releases for the Version History section
+        fetch('https://api.github.com/repos/ViperShard/ViperTab/releases?per_page=30')
+            .then(r => r.json())
+            .then(releases => {
+                const list = document.getElementById('version-list');
+                list.innerHTML = '';
+                if (!Array.isArray(releases) || releases.length === 0) {
+                    list.innerHTML = '<div class="version-error">No releases yet.</div>';
+                    return;
+                }
+                releases.forEach((rel, i) => {
+                    const item = document.createElement('div');
+                    item.className = 'version-item' + (i === 0 ? ' version-latest' : '');
+
+                    const head = document.createElement('div');
+                    head.className = 'version-head';
+                    const tag = document.createElement('span');
+                    tag.className = 'version-tag';
+                    tag.textContent = rel.tag_name || rel.name || '—';
+                    const date = document.createElement('span');
+                    date.className = 'version-date';
+                    if (rel.published_at) {
+                        date.textContent = new Date(rel.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                    }
+                    const badge = document.createElement('span');
+                    badge.className = 'version-badge';
+                    badge.textContent = i === 0 ? 'Latest' : 'Legacy';
+                    head.append(tag, date, badge);
+
+                    const notes = document.createElement('p');
+                    notes.className = 'version-notes';
+                    notes.textContent = (rel.body && rel.body.trim()) || 'No notes.';
+
+                    const downloads = document.createElement('div');
+                    downloads.className = 'version-downloads';
+                    (rel.assets || []).filter(a => a.name && a.name.endsWith('.zip')).forEach(asset => {
+                        const a = document.createElement('a');
+                        a.href = asset.browser_download_url;
+                        a.textContent = '↓  ' + asset.name;
+                        a.className = 'version-download';
+                        downloads.appendChild(a);
+                    });
+
+                    item.append(head, notes, downloads);
+                    list.appendChild(item);
+                });
+            })
+            .catch(() => {
+                document.getElementById('version-list').innerHTML =
+                    '<div class="version-error">Could not load releases. <a href="https://github.com/ViperShard/ViperTab/releases">View on GitHub</a></div>';
             });
     </script>
 </body>
