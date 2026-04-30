@@ -3050,91 +3050,97 @@ async function checkForUpdates() {
         if (!remote) return;
 
         const myEdition = EDITION_ID;
-        const myName = EDITION_LABEL[myEdition];
         const installed = chrome.runtime?.getManifest?.()?.version || '0.0.0';
 
-        // Per-edition info, falling back to legacy flat schema for older repos
         const editions = remote.editions || {
             main:    { version: remote.version, url: remote.url, notes: remote.notes },
             dev:     { version: remote.version, url: remote.url, notes: remote.notes },
             student: { version: remote.version, url: remote.url, notes: remote.notes },
             zen:     { version: remote.version, url: remote.url, notes: remote.notes },
         };
-        const myInfo = editions[myEdition];
 
-        // Primary: own edition has a newer version
+        // Reset the stack on each check so we never have stale entries.
+        const stack = $('update-banner-stack');
+        if (stack) stack.innerHTML = '';
+
+        // Primary banner FIRST (own edition update) — sticks at top of stack.
+        const myInfo = editions[myEdition];
         if (myInfo?.version && compareVersions(myInfo.version, installed) > 0) {
             const dismissed = await getStored(`vipertab.dismissed.${myEdition}`);
             if (myInfo.version !== dismissed) {
                 showUpdateBanner({
                     edition: myEdition,
                     secondary: false,
-                    title: `${myName} v${myInfo.version} available`,
+                    title: `${EDITION_LABEL[myEdition]} v${myInfo.version} available`,
                     linkText: 'Download',
                     url: myInfo.url || remote.url,
                     notes: myInfo.notes,
                     dismissKey: `vipertab.dismissed.${myEdition}`,
                     dismissValue: myInfo.version,
                 });
-                return;
             }
         }
 
-        // Secondary: any other edition has a version the user hasn't dismissed yet.
-        // We compare against the per-edition dismiss key (NOT the user's own
-        // installed version, since editions have independent version lines).
+        // Secondary banners for ALL other editions with un-dismissed updates —
+        // each gets its own row with its own dismiss button.
         for (const otherEdition of ALL_EDITIONS) {
             if (otherEdition === myEdition) continue;
             const otherInfo = editions[otherEdition];
             if (!otherInfo?.version) continue;
             const dismissed = await getStored(`vipertab.dismissed.${otherEdition}`);
             if (otherInfo.version === dismissed) continue;
-            const otherName = EDITION_LABEL[otherEdition];
             showUpdateBanner({
                 edition: otherEdition,
                 secondary: true,
-                title: `${otherName} v${otherInfo.version} just dropped`,
+                title: `${EDITION_LABEL[otherEdition]} v${otherInfo.version} just dropped`,
                 linkText: 'Try it',
                 url: otherInfo.url || remote.url,
                 notes: otherInfo.notes,
                 dismissKey: `vipertab.dismissed.${otherEdition}`,
                 dismissValue: otherInfo.version,
             });
-            return; // only show one secondary banner at a time
         }
     } catch { /* offline / repo not set up yet */ }
 }
 
 function showUpdateBanner(opts) {
-    const banner = $('update-banner');
-    if (!banner) return;
-    banner.classList.toggle('secondary', !!opts.secondary);
-    if (opts.edition) banner.dataset.badgeEdition = opts.edition;
-    else delete banner.dataset.badgeEdition;
+    const stack = $('update-banner-stack');
+    if (!stack) return;
 
-    const badge = banner.querySelector('.badge');
-    if (badge) {
-        const meta = EDITION_BADGE[opts.edition];
-        badge.textContent = (meta?.label || 'Update').toUpperCase();
-    }
-    const msg = banner.querySelector('.upd-msg');
-    if (msg) msg.textContent = opts.title;
-    const ver = banner.querySelector('.upd-version');
-    if (ver) ver.style.display = 'none';
-    const link = banner.querySelector('.upd-link');
-    if (link) {
-        link.href = opts.url || '#';
-        link.textContent = (opts.linkText || 'Download') + ' →';
-        if (opts.notes) link.title = opts.notes;
-    }
-    const closeBtn = banner.querySelector('.upd-close');
-    if (closeBtn) closeBtn.onclick = async () => {
-        banner.hidden = true;
+    const banner = document.createElement('div');
+    banner.className = 'update-banner' + (opts.secondary ? ' secondary' : '');
+    if (opts.edition) banner.dataset.badgeEdition = opts.edition;
+
+    const badge = document.createElement('span');
+    badge.className = 'badge';
+    const meta = EDITION_BADGE[opts.edition];
+    badge.textContent = (meta?.label || 'Update').toUpperCase();
+
+    const msg = document.createElement('span');
+    msg.className = 'upd-msg';
+    msg.textContent = opts.title;
+
+    const link = document.createElement('a');
+    link.className = 'upd-link';
+    link.href = opts.url || '#';
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = (opts.linkText || 'Download') + ' →';
+    if (opts.notes) link.title = opts.notes;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'upd-close';
+    closeBtn.title = 'Dismiss';
+    closeBtn.textContent = '×';
+    closeBtn.addEventListener('click', async () => {
+        banner.remove();
         if (opts.dismissKey && opts.dismissValue) {
             await setStored(opts.dismissKey, opts.dismissValue);
         }
-    };
-    banner.hidden = false;
+    });
+
+    banner.append(badge, msg, link, closeBtn);
+    stack.appendChild(banner);
 }
 
 // ---------------------------------------------------------------------------
