@@ -281,6 +281,60 @@
             }
         }
 
+        /* === Editions === */
+        .editions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 18px;
+        }
+        .edition {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 28px 28px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .edition:hover {
+            border-color: var(--line-bright);
+            transform: translateY(-2px);
+        }
+        .edition-tag {
+            align-self: flex-start;
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--gold);
+            background: var(--gold-soft);
+            padding: 3px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(201, 163, 107, 0.18);
+            font-weight: 600;
+        }
+        .edition-tag-dev {
+            color: #6dd5ed;
+            background: rgba(109, 213, 237, 0.08);
+            border-color: rgba(109, 213, 237, 0.2);
+        }
+        .edition h3 {
+            font-size: 22px;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+            margin: 4px 0 0;
+        }
+        .edition p {
+            font-size: 14.5px;
+            color: var(--text-dim);
+            line-height: 1.6;
+            flex: 1;
+        }
+        .edition-cta {
+            align-self: flex-start;
+            margin-top: 6px;
+        }
+
         /* === Install grid === */
         .install-grid {
             display: grid;
@@ -399,9 +453,9 @@
         </a>
         <div class="nav-links">
             <a href="#features">Features</a>
+            <a href="#editions">Editions</a>
             <a href="#install">Install</a>
             <a href="https://github.com/ViperShard/ViperTab">GitHub</a>
-            <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip">Download</a>
         </div>
     </nav>
 
@@ -471,6 +525,31 @@
                     <h3>Auto-update banner</h3>
                 </div>
                 <p>The extension polls this site for new versions on every tab. When one drops, a quiet banner appears at the top with a one-click download — no surprise reloads, no telemetry.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="body" id="editions">
+        <div class="section-eyebrow">Editions</div>
+        <h2 class="section-title">Pick the build that fits your day.</h2>
+        <p class="section-lede">Same engine, same widget library — different defaults baked in. Switch between them anytime; preferences and saved data live in browser storage and follow you within each install.</p>
+
+        <div class="editions">
+            <div class="edition">
+                <div class="edition-tag">Default</div>
+                <h3>ViperTab</h3>
+                <p>Apple Glass desktop with clock, weather, notes, calculator, world clocks, recently closed, sound visualizer, and the rest of the home pack — plus 16 widgets to swap freely.</p>
+                <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip" class="btn btn-primary edition-cta">
+                    <span>↓</span><span>Download</span>
+                </a>
+            </div>
+            <div class="edition">
+                <div class="edition-tag edition-tag-dev">Dev</div>
+                <h3>ViperTab Dev</h3>
+                <p>Modern dev tool aesthetic. Default widgets are Hacker News, regex tester, JSON formatter, encoder/decoder, timestamps, UUID, and the system status — every essential utility one new tab away.</p>
+                <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip" class="btn btn-primary edition-cta">
+                    <span>↓</span><span>Download</span>
+                </a>
             </div>
         </div>
     </section>

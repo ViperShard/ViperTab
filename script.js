@@ -22,13 +22,20 @@ async function setStored(key, value) {
     return new Promise(res => SS.set({ [key]: value }, res));
 }
 
+// Edition detection — `ViperTab Dev` vs main `ViperTab`
+const EDITION_NAME = (typeof chrome !== 'undefined' && chrome.runtime?.getManifest?.()?.name) || 'ViperTab';
+const IS_DEV_EDITION = /\bdev\b/i.test(EDITION_NAME);
+if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('data-edition', IS_DEV_EDITION ? 'dev' : 'main');
+}
+
 const PREFS = {
     timeFormat: '24',
     tempUnit: 'fahrenheit',
-    theme: 'glass',
-    wallpaperId: 'sequoia',
+    theme: IS_DEV_EDITION ? 'dev' : 'glass',
+    wallpaperId: IS_DEV_EDITION ? 'midnight' : 'sequoia',
     vizType: 'bars',
-    vizPalette: 'aurora',
+    vizPalette: IS_DEV_EDITION ? 'mono' : 'aurora',
 };
 
 // Tiny pub-sub so widgets can react to global events (theme, prefs, viz toggle).
@@ -949,6 +956,261 @@ const WIDGET_LIBRARY = {
             };
         },
     },
+
+    // ----- Dev tools ---------------------------------------------------
+    hackernews: {
+        id: 'hackernews', name: 'Hacker News', icon: 'Y', category: 'Dev',
+        sizes: ['small', 'tall'],
+        render(container) {
+            container.classList.add('hn-widget');
+            container.innerHTML = `
+                <div class="widget-label"><span>Hacker News</span></div>
+                <ul class="hn-list"><li class="hn-loading">Loading…</li></ul>`;
+            const list = container.querySelector('.hn-list');
+            async function load() {
+                try {
+                    const r1 = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
+                    const ids = (await r1.json()).slice(0, 8);
+                    const stories = await Promise.all(ids.map(id =>
+                        fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(r => r.json())
+                    ));
+                    list.innerHTML = '';
+                    stories.forEach(s => {
+                        if (!s) return;
+                        const li = document.createElement('li');
+                        li.className = 'hn-row';
+                        const a = document.createElement('a');
+                        a.href = s.url || `https://news.ycombinator.com/item?id=${s.id}`;
+                        a.target = '_blank'; a.rel = 'noopener noreferrer';
+                        a.textContent = s.title;
+                        a.className = 'hn-title';
+                        const meta = document.createElement('span');
+                        meta.className = 'hn-meta';
+                        meta.textContent = `${s.score ?? 0} · ${s.descendants ?? 0}c`;
+                        li.append(a, meta);
+                        list.appendChild(li);
+                    });
+                } catch {
+                    list.innerHTML = '';
+                    const li = document.createElement('li');
+                    li.className = 'hn-error';
+                    li.textContent = 'Offline';
+                    list.appendChild(li);
+                }
+            }
+            load();
+            const iv = setInterval(load, 5 * 60 * 1000);
+            return () => { clearInterval(iv); container.classList.remove('hn-widget'); };
+        },
+    },
+    regex: {
+        id: 'regex', name: 'Regex Tester', icon: '/.*/', category: 'Dev',
+        sizes: ['small', 'tall'],
+        render(container) {
+            container.classList.add('rx-widget');
+            container.innerHTML = `
+                <div class="widget-label"><span>Regex Tester</span></div>
+                <input type="text" class="rx-pattern" placeholder="/pattern/flags" spellcheck="false">
+                <textarea class="rx-test" placeholder="Test string…" spellcheck="false"></textarea>
+                <div class="rx-result"></div>`;
+            const pattern = container.querySelector('.rx-pattern');
+            const test = container.querySelector('.rx-test');
+            const result = container.querySelector('.rx-result');
+            function run() {
+                const p = pattern.value.trim();
+                const t = test.value;
+                if (!p) { result.textContent = ''; result.className = 'rx-result'; return; }
+                try {
+                    const m = p.match(/^\/(.+)\/([gimsuy]*)$/);
+                    let re;
+                    if (m) re = new RegExp(m[1], m[2].includes('g') ? m[2] : m[2] + 'g');
+                    else re = new RegExp(p, 'g');
+                    const matches = Array.from(t.matchAll(re));
+                    result.innerHTML = '';
+                    if (matches.length === 0) {
+                        result.textContent = 'No matches';
+                        result.className = 'rx-result rx-empty';
+                    } else {
+                        result.className = 'rx-result rx-found';
+                        const summary = document.createElement('div');
+                        summary.className = 'rx-summary';
+                        summary.textContent = `${matches.length} match${matches.length === 1 ? '' : 'es'}`;
+                        result.appendChild(summary);
+                        matches.slice(0, 12).forEach((match, i) => {
+                            const div = document.createElement('div');
+                            div.className = 'rx-match';
+                            div.textContent = `[${i}] ${match[0]}`;
+                            result.appendChild(div);
+                        });
+                    }
+                } catch (e) {
+                    result.textContent = `Error: ${e.message}`;
+                    result.className = 'rx-result rx-error';
+                }
+            }
+            pattern.addEventListener('input', run);
+            test.addEventListener('input', run);
+            return () => container.classList.remove('rx-widget');
+        },
+    },
+    json: {
+        id: 'json', name: 'JSON Formatter', icon: '{}', category: 'Dev',
+        sizes: ['tall', 'wide'],
+        render(container) {
+            container.classList.add('json-widget');
+            container.innerHTML = `
+                <div class="widget-label">
+                    <span>JSON</span>
+                    <div class="json-actions">
+                        <button class="json-btn json-format">Format</button>
+                        <button class="json-btn json-minify">Minify</button>
+                        <button class="json-btn json-clear">Clear</button>
+                    </div>
+                </div>
+                <textarea class="json-area" placeholder='{"paste": "JSON here"}' spellcheck="false"></textarea>`;
+            const ta = container.querySelector('.json-area');
+            container.querySelector('.json-format').addEventListener('click', () => {
+                try { ta.value = JSON.stringify(JSON.parse(ta.value), null, 2); }
+                catch (e) { ta.value = `// Error: ${e.message}\n` + ta.value; }
+            });
+            container.querySelector('.json-minify').addEventListener('click', () => {
+                try { ta.value = JSON.stringify(JSON.parse(ta.value)); }
+                catch (e) { ta.value = `// Error: ${e.message}\n` + ta.value; }
+            });
+            container.querySelector('.json-clear').addEventListener('click', () => { ta.value = ''; });
+            return () => container.classList.remove('json-widget');
+        },
+    },
+    encoder: {
+        id: 'encoder', name: 'Encoder / Decoder', icon: '⇄', category: 'Dev',
+        sizes: ['small', 'tall'],
+        render(container) {
+            container.classList.add('enc-widget');
+            container.innerHTML = `
+                <div class="widget-label">
+                    <span>Encode / Decode</span>
+                    <select class="enc-mode">
+                        <option value="base64">Base64</option>
+                        <option value="url">URL</option>
+                        <option value="html">HTML</option>
+                    </select>
+                </div>
+                <textarea class="enc-input" placeholder="Input" spellcheck="false"></textarea>
+                <div class="enc-buttons">
+                    <button class="enc-btn enc-encode">Encode ↓</button>
+                    <button class="enc-btn enc-decode">Decode ↑</button>
+                </div>
+                <textarea class="enc-output" placeholder="Output" spellcheck="false" readonly></textarea>`;
+            const mode = container.querySelector('.enc-mode');
+            const input = container.querySelector('.enc-input');
+            const output = container.querySelector('.enc-output');
+            const transforms = {
+                base64: { e: s => btoa(unescape(encodeURIComponent(s))), d: s => decodeURIComponent(escape(atob(s))) },
+                url: { e: encodeURIComponent, d: decodeURIComponent },
+                html: {
+                    e: s => s.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]),
+                    d: s => { const d = document.createElement('textarea'); d.innerHTML = s; return d.value; }
+                }
+            };
+            function run(direction) {
+                try { output.value = transforms[mode.value][direction](input.value); }
+                catch (e) { output.value = `Error: ${e.message}`; }
+            }
+            container.querySelector('.enc-encode').addEventListener('click', () => run('e'));
+            container.querySelector('.enc-decode').addEventListener('click', () => run('d'));
+            return () => container.classList.remove('enc-widget');
+        },
+    },
+    timestamps: {
+        id: 'timestamps', name: 'Timestamps', icon: '⌚', category: 'Dev',
+        sizes: ['small', 'tall'],
+        render(container) {
+            container.classList.add('ts-widget');
+            container.innerHTML = `
+                <div class="widget-label">
+                    <span>Timestamps</span>
+                    <button class="ts-now">Now</button>
+                </div>
+                <div class="ts-rows">
+                    <div class="ts-row"><label>Unix s</label><input class="ts-unix" type="text" spellcheck="false"></div>
+                    <div class="ts-row"><label>Unix ms</label><input class="ts-unixms" type="text" spellcheck="false"></div>
+                    <div class="ts-row"><label>ISO</label><input class="ts-iso" type="text" spellcheck="false"></div>
+                    <div class="ts-row"><label>Local</label><input class="ts-local" type="text" readonly></div>
+                    <div class="ts-row"><label>Relative</label><input class="ts-rel" type="text" readonly></div>
+                </div>`;
+            const els = {
+                unix:   container.querySelector('.ts-unix'),
+                unixms: container.querySelector('.ts-unixms'),
+                iso:    container.querySelector('.ts-iso'),
+                local:  container.querySelector('.ts-local'),
+                rel:    container.querySelector('.ts-rel'),
+            };
+            function update(date, src) {
+                if (!date || isNaN(date.getTime())) return;
+                if (src !== 'unix')   els.unix.value   = Math.floor(date.getTime() / 1000);
+                if (src !== 'unixms') els.unixms.value = date.getTime();
+                if (src !== 'iso')    els.iso.value    = date.toISOString();
+                els.local.value = date.toLocaleString();
+                const ms = Date.now() - date.getTime();
+                const sec = Math.abs(ms / 1000);
+                let s;
+                if (sec < 60) s = `${Math.round(sec)}s`;
+                else if (sec < 3600) s = `${Math.round(sec/60)}m`;
+                else if (sec < 86400) s = `${Math.round(sec/3600)}h`;
+                else s = `${Math.round(sec/86400)}d`;
+                els.rel.value = ms > 0 ? `${s} ago` : `in ${s}`;
+            }
+            els.unix.addEventListener('input',   () => update(new Date(parseInt(els.unix.value) * 1000), 'unix'));
+            els.unixms.addEventListener('input', () => update(new Date(parseInt(els.unixms.value)), 'unixms'));
+            els.iso.addEventListener('input',    () => update(new Date(els.iso.value), 'iso'));
+            container.querySelector('.ts-now').addEventListener('click', () => update(new Date()));
+            update(new Date());
+            return () => container.classList.remove('ts-widget');
+        },
+    },
+    uuid: {
+        id: 'uuid', name: 'UUID Generator', icon: '#', category: 'Dev',
+        sizes: ['small'],
+        render(container) {
+            container.classList.add('uuid-widget');
+            container.innerHTML = `
+                <div class="widget-label"><span>UUID v4</span></div>
+                <div class="uuid-display"></div>
+                <div class="uuid-buttons">
+                    <button class="uuid-btn uuid-new">Generate</button>
+                    <button class="uuid-btn uuid-copy">Copy</button>
+                </div>
+                <ul class="uuid-history"></ul>`;
+            const display = container.querySelector('.uuid-display');
+            const history = container.querySelector('.uuid-history');
+            const past = [];
+            function gen() {
+                const v = (crypto.randomUUID && crypto.randomUUID()) || fallbackUuid();
+                if (display.textContent) past.unshift(display.textContent);
+                if (past.length > 5) past.pop();
+                display.textContent = v;
+                history.innerHTML = '';
+                past.forEach(p => {
+                    const li = document.createElement('li');
+                    li.textContent = p;
+                    li.addEventListener('click', () => navigator.clipboard?.writeText(p));
+                    history.appendChild(li);
+                });
+            }
+            function fallbackUuid() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                    const r = Math.random() * 16 | 0;
+                    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+                });
+            }
+            container.querySelector('.uuid-new').addEventListener('click', gen);
+            container.querySelector('.uuid-copy').addEventListener('click', () => {
+                navigator.clipboard?.writeText(display.textContent);
+            });
+            gen();
+            return () => container.classList.remove('uuid-widget');
+        },
+    },
 };
 
 // ---------------------------------------------------------------------------
@@ -1071,10 +1333,15 @@ const SLOT_NAMES = {
     slot5: 'Middle Left',  slot6: 'Middle Mid',  slot7: 'Middle Right',
     slot8: 'Wide Bottom',
 };
-const DEFAULT_LAYOUT = {
+const DEFAULT_LAYOUT_MAIN = {
     slot1: 'clock', slot2: 'weather', slot3: 'status', slot4: 'calculator',
     slot5: 'notes', slot6: 'recent',  slot7: 'worldclocks', slot8: 'visualizer',
 };
+const DEFAULT_LAYOUT_DEV = {
+    slot1: 'hackernews', slot2: 'status', slot3: 'timestamps', slot4: 'json',
+    slot5: 'encoder', slot6: 'regex', slot7: 'uuid', slot8: 'visualizer',
+};
+const DEFAULT_LAYOUT = IS_DEV_EDITION ? DEFAULT_LAYOUT_DEV : DEFAULT_LAYOUT_MAIN;
 
 const activeWidgets = {};   // slotId -> destroy fn
 

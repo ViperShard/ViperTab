@@ -47,9 +47,19 @@ cat > version.json <<EOF
 }
 EOF
 
-# 2. Build zip (excludes dev files, just the loadable extension)
+# 2. Build main edition zip
 rm -f ViperTab.zip
 zip -r ViperTab.zip manifest.json newtab.html style.css script.js README.md version.json icons/ -q
+
+# 2b. Build dev edition zip (same files; manifest patched to "ViperTab Dev")
+rm -f ViperTabDev.zip
+TMPDIR=$(mktemp -d)
+cp -r manifest.json newtab.html style.css script.js README.md version.json icons "$TMPDIR/"
+jq '.name = "ViperTab Dev" |
+    .description = "ViperTab — Dev edition. Hacker News, regex tester, JSON formatter, encoders, hashes, timestamps, UUIDs — every essential dev utility one new tab away."' \
+   "$TMPDIR/manifest.json" > "$TMPDIR/manifest.json.new" && mv "$TMPDIR/manifest.json.new" "$TMPDIR/manifest.json"
+( cd "$TMPDIR" && zip -r "$OLDPWD/ViperTabDev.zip" manifest.json newtab.html style.css script.js README.md version.json icons/ -q )
+rm -rf "$TMPDIR"
 
 # 3. Commit, tag, push
 git add manifest.json version.json
@@ -58,11 +68,12 @@ git tag "v$new"
 git push origin main
 git push origin "v$new"
 
-# 4. GitHub release with the zip attached
-gh release create "v$new" ViperTab.zip --title "v$new" --notes "$notes"
+# 4. GitHub release with both edition zips
+gh release create "v$new" ViperTab.zip ViperTabDev.zip --title "v$new" --notes "$notes"
 
 echo ""
 echo "✓ Released v$new"
-echo "  Download: https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip"
-echo "  Page:     https://vipershard.github.io/ViperTab/"
+echo "  ViperTab:     https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip"
+echo "  ViperTab Dev: https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip"
+echo "  Page:         https://vipershard.github.io/ViperTab/"
 echo "  Banner will appear on installed copies within seconds."
