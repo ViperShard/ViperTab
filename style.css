@@ -91,8 +91,8 @@
     --radius-sm: 0;
 }
 [data-theme="zen-light"] body { background: #fafaf7; }
-[data-theme="zen-light"] .wallpaper { background: #fafaf7 !important; }
-[data-theme="zen-dark"] .wallpaper { background: #000 !important; }
+/* Wallpaper presets are honored in Zen — body bg is just the fallback when no
+   wallpaper is set. Picking Sequoia / Aurora / etc. from Control Center works. */
 
 /* Zen edition: reshape the grid — one giant clock + optional secondary */
 [data-edition="zen"] .desktop {
