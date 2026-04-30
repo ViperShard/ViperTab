@@ -2818,6 +2818,14 @@ function compareVersions(a, b) {
     return 0;
 }
 
+// Edition badges: short label + color identity, used on every update banner.
+const EDITION_BADGE = {
+    main:    { label: 'Default' },
+    dev:     { label: 'Dev'     },
+    student: { label: 'Student' },
+    zen:     { label: 'Zen'     },
+};
+
 async function checkForUpdates() {
     if (!UPDATE_CHECK_URL) return;
     try {
@@ -2835,6 +2843,7 @@ async function checkForUpdates() {
             main:    { version: remote.version, url: remote.url, notes: remote.notes },
             dev:     { version: remote.version, url: remote.url, notes: remote.notes },
             student: { version: remote.version, url: remote.url, notes: remote.notes },
+            zen:     { version: remote.version, url: remote.url, notes: remote.notes },
         };
         const myInfo = editions[myEdition];
 
@@ -2843,9 +2852,10 @@ async function checkForUpdates() {
             const dismissed = await getStored(`vipertab.dismissed.${myEdition}`);
             if (myInfo.version !== dismissed) {
                 showUpdateBanner({
-                    badge: 'Update',
+                    edition: myEdition,
                     secondary: false,
                     title: `${myName} v${myInfo.version} available`,
+                    linkText: 'Download',
                     url: myInfo.url || remote.url,
                     notes: myInfo.notes,
                     dismissKey: `vipertab.dismissed.${myEdition}`,
@@ -2855,20 +2865,21 @@ async function checkForUpdates() {
             }
         }
 
-        // Secondary: any other edition is newer than installed — informational only
+        // Secondary: any other edition has a version the user hasn't dismissed yet.
+        // We compare against the per-edition dismiss key (NOT the user's own
+        // installed version, since editions have independent version lines).
         for (const otherEdition of ALL_EDITIONS) {
             if (otherEdition === myEdition) continue;
             const otherInfo = editions[otherEdition];
             if (!otherInfo?.version) continue;
-            if (compareVersions(otherInfo.version, installed) <= 0) continue;
             const dismissed = await getStored(`vipertab.dismissed.${otherEdition}`);
             if (otherInfo.version === dismissed) continue;
             const otherName = EDITION_LABEL[otherEdition];
-            const badgeShort = { dev: 'Dev', student: 'Student', main: 'New' }[otherEdition] || 'New';
             showUpdateBanner({
-                badge: badgeShort,
+                edition: otherEdition,
                 secondary: true,
-                title: `New ${otherName} v${otherInfo.version} dropped — try it`,
+                title: `${otherName} v${otherInfo.version} just dropped`,
+                linkText: 'Try it',
                 url: otherInfo.url || remote.url,
                 notes: otherInfo.notes,
                 dismissKey: `vipertab.dismissed.${otherEdition}`,
@@ -2883,8 +2894,14 @@ function showUpdateBanner(opts) {
     const banner = $('update-banner');
     if (!banner) return;
     banner.classList.toggle('secondary', !!opts.secondary);
+    if (opts.edition) banner.dataset.badgeEdition = opts.edition;
+    else delete banner.dataset.badgeEdition;
+
     const badge = banner.querySelector('.badge');
-    if (badge) badge.textContent = opts.badge || 'Update';
+    if (badge) {
+        const meta = EDITION_BADGE[opts.edition];
+        badge.textContent = (meta?.label || 'Update').toUpperCase();
+    }
     const msg = banner.querySelector('.upd-msg');
     if (msg) msg.textContent = opts.title;
     const ver = banner.querySelector('.upd-version');
@@ -2892,6 +2909,7 @@ function showUpdateBanner(opts) {
     const link = banner.querySelector('.upd-link');
     if (link) {
         link.href = opts.url || '#';
+        link.textContent = (opts.linkText || 'Download') + ' →';
         if (opts.notes) link.title = opts.notes;
     }
     const closeBtn = banner.querySelector('.upd-close');

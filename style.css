@@ -1789,19 +1789,23 @@ button { cursor: pointer; }
 }
 .update-banner .badge {
     background: #34c759;
-    color: #fff;
-    padding: 2px 8px;
+    color: #0a1f0e;
+    padding: 2px 9px;
     border-radius: 4px;
-    font-size: 10px;
+    font-size: 10.5px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
 }
-.update-banner.secondary .badge {
-    background: #6dd5ed;
-    color: #051e25;
-}
-.update-banner.secondary .upd-link { color: #6dd5ed; }
+/* Edition-coded badges — visible identity per edition */
+.update-banner[data-badge-edition="main"]    .badge { background: #5fc77f; color: #0a1f0e; }
+.update-banner[data-badge-edition="dev"]     .badge { background: #6dd5ed; color: #051e25; }
+.update-banner[data-badge-edition="student"] .badge { background: #b486e0; color: #2a1840; }
+.update-banner[data-badge-edition="zen"]     .badge { background: #c9a36b; color: #1a1408; }
+.update-banner[data-badge-edition="main"]    .upd-link { color: #5fc77f; }
+.update-banner[data-badge-edition="dev"]     .upd-link { color: #6dd5ed; }
+.update-banner[data-badge-edition="student"] .upd-link { color: #b486e0; }
+.update-banner[data-badge-edition="zen"]     .upd-link { color: #c9a36b; }
 .update-banner .upd-msg { color: var(--text); }
 .update-banner .upd-version {
     color: var(--text-dim);
