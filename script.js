@@ -2731,11 +2731,14 @@ function tipsHTML() {
         </ul>`;
 }
 function aboutHTML() {
+    const m = (typeof chrome !== 'undefined' && chrome.runtime?.getManifest?.()) || {};
+    const name = m.name || 'ViperTab';
+    const version = m.version || '—';
     return `
         <div class="about-content">
             <img src="icons/vipershard-logo.png" alt="ViperShard" class="about-logo">
-            <h3>ViperTab v1.2.0</h3>
-            <p>A macOS-inspired new tab page with Apple Glass UI,<br>helpful widgets, and a customizable dock.</p>
+            <h3>${name} v${version}</h3>
+            <p>A macOS-inspired new tab page with glass widgets,<br>a customizable dock, and Spotlight search.</p>
             <p class="about-meta">Part of the ViperShard family.</p>
         </div>`;
 }
