@@ -77,12 +77,11 @@
         /* === Hero === */
         .hero {
             position: relative;
-            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 140px 32px 100px;
+            padding: 130px 32px 80px;
             overflow: hidden;
         }
         .hero::before {
@@ -105,7 +104,15 @@
             background: linear-gradient(180deg, transparent, var(--bg) 80%);
             z-index: -1;
         }
-        .hero-content { max-width: 760px; }
+        .hero-content { max-width: 980px; }
+        .hero-editions {
+            margin: 36px auto 28px;
+            text-align: left;
+            max-width: 900px;
+        }
+        .hero-editions .edition { padding: 24px 26px; }
+        .hero-editions .edition h3 { font-size: 21px; }
+        .hero-editions .edition p { font-size: 14px; line-height: 1.55; }
         .hero-plaque {
             width: 560px;
             max-width: 90%;
@@ -597,7 +604,6 @@
         </a>
         <div class="nav-links">
             <a href="#features">Features</a>
-            <a href="#editions">Editions</a>
             <a href="#legacy">Legacy</a>
             <a href="#install">Install</a>
             <a href="https://github.com/ViperShard/ViperTab">GitHub</a>
@@ -610,15 +616,40 @@
             <div class="hero-eyebrow">A <em>ViperShard</em> project</div>
             <h1>ViperTab</h1>
             <p class="hero-tagline">Apple Glass for your new tab. 16 customizable widgets, a real dock, and Spotlight — every blank tab becomes a desktop you actually want to look at.</p>
-            <div class="cta">
-                <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip" class="btn btn-primary">
-                    <span>↓</span><span>Download v<span id="version">…</span></span>
-                </a>
-                <a href="https://github.com/ViperShard/ViperTab" class="btn btn-ghost">View source</a>
+
+            <div class="editions hero-editions">
+                <div class="edition">
+                    <div class="edition-header">
+                        <div class="edition-tag">Default</div>
+                        <span class="edition-version" data-edition-version="main">v—</span>
+                    </div>
+                    <h3>ViperTab</h3>
+                    <p>Apple Glass desktop with clock, weather, notes, calculator, world clocks, recently closed, sound visualizer, and the rest of the home pack — plus 16 widgets to swap freely.</p>
+                    <div class="edition-actions">
+                        <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip" class="btn btn-primary edition-cta">
+                            <span>↓</span><span>Download</span>
+                        </a>
+                        <a href="#legacy-main" class="edition-legacy">Older versions →</a>
+                    </div>
+                </div>
+                <div class="edition">
+                    <div class="edition-header">
+                        <div class="edition-tag edition-tag-dev">Dev</div>
+                        <span class="edition-version" data-edition-version="dev">v—</span>
+                    </div>
+                    <h3>ViperTab Dev</h3>
+                    <p>Terminal/btop aesthetic — solid panels, sharp borders, bracketed widget headers, dot-grid background, all-monospace. Multi-tab <strong>scratchpad code editor</strong>, <strong>line-by-line diff viewer</strong>, JWT decoder, hash generator (SHA-1/256/384/512), regex tester, JSON formatter, encoders, timestamps, UUID, and Hacker News.</p>
+                    <div class="edition-actions">
+                        <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip" class="btn btn-primary edition-cta">
+                            <span>↓</span><span>Download</span>
+                        </a>
+                        <a href="#legacy-dev" class="edition-legacy">Older versions →</a>
+                    </div>
+                </div>
             </div>
+
             <div class="hero-meta">
-                Free &nbsp;·&nbsp; Works in Chrome, Edge, Brave, Arc, Opera, Vivaldi &amp; other Chromium-based browsers &nbsp;·&nbsp;
-                <a href="https://github.com/ViperShard/ViperTab/releases">all versions</a>
+                Free &nbsp;·&nbsp; Works in Chrome, Edge, Brave, Arc, Opera, Vivaldi &amp; other Chromium-based browsers
             </div>
         </div>
     </section>
@@ -670,43 +701,6 @@
                     <h3>Auto-update banner</h3>
                 </div>
                 <p>The extension polls this site for new versions on every tab. When one drops, a quiet banner appears at the top with a one-click download — no surprise reloads, no telemetry.</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="body" id="editions">
-        <div class="section-eyebrow">Editions</div>
-        <h2 class="section-title">Pick the build that fits your day.</h2>
-        <p class="section-lede">Same engine, same widget library — different defaults baked in. Switch between them anytime; preferences and saved data live in browser storage and follow you within each install.</p>
-
-        <div class="editions">
-            <div class="edition">
-                <div class="edition-header">
-                    <div class="edition-tag">Default</div>
-                    <span class="edition-version" data-edition-version="main">v—</span>
-                </div>
-                <h3>ViperTab</h3>
-                <p>Apple Glass desktop with clock, weather, notes, calculator, world clocks, recently closed, sound visualizer, and the rest of the home pack — plus 16 widgets to swap freely.</p>
-                <div class="edition-actions">
-                    <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip" class="btn btn-primary edition-cta">
-                        <span>↓</span><span>Download</span>
-                    </a>
-                    <a href="#legacy-main" class="edition-legacy">Older versions →</a>
-                </div>
-            </div>
-            <div class="edition">
-                <div class="edition-header">
-                    <div class="edition-tag edition-tag-dev">Dev</div>
-                    <span class="edition-version" data-edition-version="dev">v—</span>
-                </div>
-                <h3>ViperTab Dev</h3>
-                <p>Terminal/btop aesthetic — solid panels, sharp borders, bracketed widget headers, dot-grid background, all-monospace. Multi-tab <strong>scratchpad code editor</strong>, <strong>line-by-line diff viewer</strong>, JWT decoder, hash generator (SHA-1/256/384/512), regex tester, JSON formatter, encoders, timestamps, UUID, and Hacker News.</p>
-                <div class="edition-actions">
-                    <a href="https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip" class="btn btn-primary edition-cta">
-                        <span>↓</span><span>Download</span>
-                    </a>
-                    <a href="#legacy-dev" class="edition-legacy">Older versions →</a>
-                </div>
             </div>
         </div>
     </section>
