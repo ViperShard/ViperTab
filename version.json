@@ -1,27 +1,27 @@
 {
-  "version": "1.4.8",
+  "version": "1.4.9",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Update banner is now a stack — every edition with an undismissed update gets its own row, dismissed independently. Primary banner (your edition) at top, secondaries below, all clearly labeled with the edition's colored chip and full name.\n",
+  "notes": "Edition-locked widget pools: each edition's Control Center picker only shows widgets in its own pool (Main + Zen share general widgets; Dev gets dev-only utilities; Student gets student-only academic tools; Pomodoro and Todo stay cross-edition since they're universal). Defaults updated so Dev no longer references the Main 'status' widget and Student no longer references the Main 'visualizer' widget. Saved layouts that point at a now-disallowed widget gracefully fall back to the edition's default for that slot.\n",
   "editions": {
     "main": {
-      "version": "1.4.8",
+      "version": "1.4.9",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Update banner is now a stack — every edition with an undismissed update gets its own row, dismissed independently. Primary banner (your edition) at top, secondaries below, all clearly labeled with the edition's colored chip and full name.\n"
+      "notes": "Edition-locked widget pools: each edition's Control Center picker only shows widgets in its own pool (Main + Zen share general widgets; Dev gets dev-only utilities; Student gets student-only academic tools; Pomodoro and Todo stay cross-edition since they're universal). Defaults updated so Dev no longer references the Main 'status' widget and Student no longer references the Main 'visualizer' widget. Saved layouts that point at a now-disallowed widget gracefully fall back to the edition's default for that slot.\n"
     },
     "dev": {
-      "version": "1.4.8",
+      "version": "1.4.9",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Update banner is now a stack — every edition with an undismissed update gets its own row, dismissed independently. Primary banner (your edition) at top, secondaries below, all clearly labeled with the edition's colored chip and full name.\n"
+      "notes": "Edition-locked widget pools: each edition's Control Center picker only shows widgets in its own pool (Main + Zen share general widgets; Dev gets dev-only utilities; Student gets student-only academic tools; Pomodoro and Todo stay cross-edition since they're universal). Defaults updated so Dev no longer references the Main 'status' widget and Student no longer references the Main 'visualizer' widget. Saved layouts that point at a now-disallowed widget gracefully fall back to the edition's default for that slot.\n"
     },
     "student": {
-      "version": "1.0.5",
+      "version": "1.0.6",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip",
-      "notes": "Update banner is now a stack — every edition with an undismissed update gets its own row, dismissed independently. Primary banner (your edition) at top, secondaries below, all clearly labeled with the edition's colored chip and full name.\n"
+      "notes": "Edition-locked widget pools: each edition's Control Center picker only shows widgets in its own pool (Main + Zen share general widgets; Dev gets dev-only utilities; Student gets student-only academic tools; Pomodoro and Todo stay cross-edition since they're universal). Defaults updated so Dev no longer references the Main 'status' widget and Student no longer references the Main 'visualizer' widget. Saved layouts that point at a now-disallowed widget gracefully fall back to the edition's default for that slot.\n"
     },
     "zen": {
-      "version": "1.0.5",
+      "version": "1.0.6",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip",
-      "notes": "Update banner is now a stack — every edition with an undismissed update gets its own row, dismissed independently. Primary banner (your edition) at top, secondaries below, all clearly labeled with the edition's colored chip and full name.\n"
+      "notes": "Edition-locked widget pools: each edition's Control Center picker only shows widgets in its own pool (Main + Zen share general widgets; Dev gets dev-only utilities; Student gets student-only academic tools; Pomodoro and Todo stay cross-edition since they're universal). Defaults updated so Dev no longer references the Main 'status' widget and Student no longer references the Main 'visualizer' widget. Saved layouts that point at a now-disallowed widget gracefully fall back to the edition's default for that slot.\n"
     }
   }
 }
