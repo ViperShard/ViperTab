@@ -1627,6 +1627,11 @@ button { cursor: pointer; }
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
+.update-banner.secondary .badge {
+    background: #6dd5ed;
+    color: #051e25;
+}
+.update-banner.secondary .upd-link { color: #6dd5ed; }
 .update-banner .upd-msg { color: var(--text); }
 .update-banner .upd-version {
     color: var(--text-dim);

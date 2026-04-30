@@ -2139,28 +2139,81 @@ function compareVersions(a, b) {
 async function checkForUpdates() {
     if (!UPDATE_CHECK_URL) return;
     try {
-        const dismissed = await getStored('vipertab.update.dismissed');
         const r = await fetch(`${UPDATE_CHECK_URL}?t=${Date.now()}`, { cache: 'no-store' });
         if (!r.ok) return;
         const remote = await r.json();
-        if (!remote?.version) return;
-        const local = chrome.runtime?.getManifest?.()?.version || '0.0.0';
-        if (compareVersions(remote.version, local) > 0 && remote.version !== dismissed) {
-            showUpdateBanner(remote);
+        if (!remote) return;
+
+        const myEdition = IS_DEV_EDITION ? 'dev' : 'main';
+        const otherEdition = IS_DEV_EDITION ? 'main' : 'dev';
+        const myName = IS_DEV_EDITION ? 'ViperTab Dev' : 'ViperTab';
+        const otherName = IS_DEV_EDITION ? 'ViperTab' : 'ViperTab Dev';
+        const installed = chrome.runtime?.getManifest?.()?.version || '0.0.0';
+
+        // Per-edition info, falling back to legacy flat schema for older repos
+        const editions = remote.editions || {
+            main: { version: remote.version, url: remote.url, notes: remote.notes },
+            dev:  { version: remote.version, url: remote.url, notes: remote.notes },
+        };
+        const myInfo = editions[myEdition];
+        const otherInfo = editions[otherEdition];
+
+        // Primary: own edition has a newer version
+        if (myInfo?.version && compareVersions(myInfo.version, installed) > 0) {
+            const dismissed = await getStored(`vipertab.dismissed.${myEdition}`);
+            if (myInfo.version !== dismissed) {
+                showUpdateBanner({
+                    badge: 'Update',
+                    secondary: false,
+                    title: `${myName} v${myInfo.version} available`,
+                    url: myInfo.url || remote.url,
+                    notes: myInfo.notes,
+                    dismissKey: `vipertab.dismissed.${myEdition}`,
+                    dismissValue: myInfo.version,
+                });
+                return;
+            }
+        }
+
+        // Secondary: the other edition has a newer version — informational only
+        if (otherInfo?.version && compareVersions(otherInfo.version, installed) > 0) {
+            const dismissed = await getStored(`vipertab.dismissed.${otherEdition}`);
+            if (otherInfo.version !== dismissed) {
+                showUpdateBanner({
+                    badge: otherEdition === 'dev' ? 'Dev' : 'New',
+                    secondary: true,
+                    title: `New ${otherName} v${otherInfo.version} dropped — try it`,
+                    url: otherInfo.url || remote.url,
+                    notes: otherInfo.notes,
+                    dismissKey: `vipertab.dismissed.${otherEdition}`,
+                    dismissValue: otherInfo.version,
+                });
+            }
         }
     } catch { /* offline / repo not set up yet */ }
 }
 
-function showUpdateBanner(remote) {
+function showUpdateBanner(opts) {
     const banner = $('update-banner');
     if (!banner) return;
-    banner.querySelector('.upd-version').textContent = `v${remote.version}`;
+    banner.classList.toggle('secondary', !!opts.secondary);
+    const badge = banner.querySelector('.badge');
+    if (badge) badge.textContent = opts.badge || 'Update';
+    const msg = banner.querySelector('.upd-msg');
+    if (msg) msg.textContent = opts.title;
+    const ver = banner.querySelector('.upd-version');
+    if (ver) ver.style.display = 'none';
     const link = banner.querySelector('.upd-link');
-    link.href = remote.url || '#';
-    if (remote.notes) link.title = remote.notes;
-    banner.querySelector('.upd-close').onclick = async () => {
+    if (link) {
+        link.href = opts.url || '#';
+        if (opts.notes) link.title = opts.notes;
+    }
+    const closeBtn = banner.querySelector('.upd-close');
+    if (closeBtn) closeBtn.onclick = async () => {
         banner.hidden = true;
-        await setStored('vipertab.update.dismissed', remote.version);
+        if (opts.dismissKey && opts.dismissValue) {
+            await setStored(opts.dismissKey, opts.dismissValue);
+        }
     };
     banner.hidden = false;
 }
