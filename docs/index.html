@@ -844,14 +844,18 @@
                 const main    = d.editions?.main?.version    || d.version || '—';
                 const dev     = d.editions?.dev?.version     || d.version || '—';
                 const student = d.editions?.student?.version || d.version || '—';
-                document.getElementById('version').textContent = main;
-                document.getElementById('version-2').textContent = main;
+                const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+                setText('version', main);
+                setText('version-2', main);
                 document.querySelectorAll('[data-edition-version="main"]').forEach(el => el.textContent = 'v' + main);
                 document.querySelectorAll('[data-edition-version="dev"]').forEach(el => el.textContent = 'v' + dev);
                 document.querySelectorAll('[data-edition-version="student"]').forEach(el => el.textContent = 'v' + student);
             })
             .catch(() => {
-                ['version', 'version-2'].forEach(id => document.getElementById(id).textContent = '—');
+                ['version', 'version-2'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = '—';
+                });
             });
 
         // Fetch every release and split into per-edition history streams.
