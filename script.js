@@ -2050,118 +2050,302 @@ const WIDGET_LIBRARY = {
             return () => container.classList.remove('gpa-widget');
         },
     },
-    citation: {
-        id: 'citation', name: 'Citation Generator', icon: '📖', category: 'Productivity',
-        sizes: ['small', 'wide'],
+    schedule: {
+        id: 'schedule', name: 'Class Schedule', icon: '📅', category: 'Productivity',
+        sizes: ['small', 'tall', 'wide'],
         render(container) {
-            container.classList.add('cite-widget');
+            container.classList.add('sched-widget');
             container.innerHTML = `
                 <div class="widget-label">
-                    <span>Citation</span>
-                    <select class="cite-format">
-                        <option value="mla">MLA</option>
-                        <option value="apa">APA</option>
-                        <option value="chicago">Chicago</option>
-                    </select>
-                </div>
-                <input type="text" class="cite-input" placeholder="URL or DOI" spellcheck="false">
-                <button class="cite-go">Generate</button>
-                <div class="cite-output">Paste a URL or DOI, pick a style, hit Generate.</div>`;
-            const fmt = container.querySelector('.cite-format');
-            const input = container.querySelector('.cite-input');
-            const goBtn = container.querySelector('.cite-go');
-            const out = container.querySelector('.cite-output');
-            async function go() {
-                const q = input.value.trim();
-                if (!q) return;
-                out.textContent = 'Looking up…';
-                out.className = 'cite-output cite-loading';
-                try {
-                    // Wikipedia citoid: free, CORS-enabled
-                    const url = `https://en.wikipedia.org/api/rest_v1/data/citation/${fmt.value}/${encodeURIComponent(q)}`;
-                    const r = await fetch(url);
-                    if (!r.ok) throw new Error('citation not found');
-                    const data = await r.json();
-                    if (Array.isArray(data) && data[0]) {
-                        out.textContent = typeof data[0] === 'string' ? data[0] : (data[0].itemType ? JSON.stringify(data[0], null, 2) : String(data[0]));
-                    } else {
-                        out.textContent = JSON.stringify(data, null, 2);
-                    }
-                    out.className = 'cite-output cite-result';
-                    out.title = 'Click to copy';
-                    out.onclick = () => navigator.clipboard?.writeText(out.textContent);
-                } catch (e) {
-                    out.textContent = 'Could not generate. Check the URL/DOI and try again.';
-                    out.className = 'cite-output cite-error';
-                }
-            }
-            goBtn.addEventListener('click', go);
-            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
-            return () => container.classList.remove('cite-widget');
-        },
-    },
-    flashcards: {
-        id: 'flashcards', name: 'Flashcards', icon: '🃏', category: 'Productivity',
-        sizes: ['small', 'tall'],
-        render(container) {
-            container.classList.add('fc-widget');
-            container.innerHTML = `
-                <div class="widget-label">
-                    <span>Flashcards</span>
-                    <div class="fc-actions">
-                        <span class="fc-count">0/0</span>
-                        <button class="fc-add" title="Add card">+</button>
+                    <span>Schedule</span>
+                    <div class="sched-actions">
+                        <button class="sched-period-minus" title="Remove period">−</button>
+                        <button class="sched-period-plus" title="Add period">+</button>
                     </div>
                 </div>
-                <div class="fc-card">
-                    <div class="fc-face fc-empty">Add a card to begin.</div>
-                </div>
-                <div class="fc-controls">
-                    <button class="fc-flip">Flip</button>
-                    <button class="fc-prev">‹ Prev</button>
-                    <button class="fc-next">Next ›</button>
-                </div>`;
-            const card = container.querySelector('.fc-card');
-            const face = container.querySelector('.fc-face');
-            const flipBtn = container.querySelector('.fc-flip');
-            const prevBtn = container.querySelector('.fc-prev');
-            const nextBtn = container.querySelector('.fc-next');
-            const addBtn = container.querySelector('.fc-add');
-            const countEl = container.querySelector('.fc-count');
-            let deck = [];
-            let idx = 0;
-            let showingFront = true;
-            async function load() { deck = await getStored('vipertab.flashcards', []); idx = 0; showingFront = true; render(); }
-            function render() {
-                if (deck.length === 0) {
-                    face.textContent = 'Add a card to begin.';
-                    face.className = 'fc-face fc-empty';
-                    countEl.textContent = '0/0';
-                    return;
-                }
-                if (idx >= deck.length) idx = 0;
-                if (idx < 0) idx = deck.length - 1;
-                const c = deck[idx];
-                face.textContent = showingFront ? c.front : c.back;
-                face.className = 'fc-face ' + (showingFront ? 'fc-front' : 'fc-back');
-                countEl.textContent = `${idx + 1}/${deck.length}`;
+                <div class="sched-grid"></div>`;
+            const grid = container.querySelector('.sched-grid');
+            const minusBtn = container.querySelector('.sched-period-minus');
+            const plusBtn = container.querySelector('.sched-period-plus');
+
+            const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+            // Default 7-period times (8:00, 8:55, 9:50, 10:45, 11:40, 12:35, 13:30 → +50min each)
+            function periodTimes(p) {
+                const startMin = 480 + p * 55; // 8:00 AM = 480
+                const endMin = startMin + 50;
+                const fmt = (m) => {
+                    const h12 = ((Math.floor(m / 60) + 11) % 12) + 1;
+                    const min = String(m % 60).padStart(2, '0');
+                    const ampm = m >= 720 ? 'PM' : 'AM';
+                    return `${h12}:${min} ${ampm}`;
+                };
+                return { start: startMin, end: endMin, label: `${fmt(startMin)}–${fmt(endMin)}` };
             }
-            flipBtn.addEventListener('click', () => { showingFront = !showingFront; render(); });
-            card.addEventListener('click', () => { showingFront = !showingFront; render(); });
-            prevBtn.addEventListener('click', () => { idx--; showingFront = true; render(); });
-            nextBtn.addEventListener('click', () => { idx++; showingFront = true; render(); });
-            addBtn.addEventListener('click', async () => {
-                const front = window.prompt('Front of card:');
-                if (!front) return;
-                const back = window.prompt('Back of card:');
-                if (back == null) return;
-                deck.push({ front: front.trim(), back: back.trim() });
-                await setStored('vipertab.flashcards', deck);
-                idx = deck.length - 1; showingFront = true;
+
+            let state = null;
+            let liveTimer = null;
+
+            async function load() {
+                const stored = await getStored('vipertab.schedule', null);
+                if (stored && Array.isArray(stored.grid) && stored.grid.length === DAYS.length) {
+                    state = stored;
+                } else {
+                    state = {
+                        periods: 7,
+                        grid: DAYS.map(() => Array(7).fill(null).map(() => ({ name: '', room: '' }))),
+                    };
+                }
                 render();
+            }
+
+            function currentSlot() {
+                const now = new Date();
+                const day = now.getDay() - 1;
+                if (day < 0 || day > 4) return { day: -1, period: -1 };
+                const t = now.getHours() * 60 + now.getMinutes();
+                for (let p = 0; p < state.periods; p++) {
+                    const { start, end } = periodTimes(p);
+                    if (t >= start && t <= end) return { day, period: p };
+                }
+                return { day, period: -1 };
+            }
+
+            function save() { setStored('vipertab.schedule', state); }
+
+            function makeCell(name, room, dayIdx, periodIdx) {
+                const cell = document.createElement('div');
+                cell.className = 'sched-cell';
+                const nameEl = document.createElement('input');
+                nameEl.className = 'sched-cell-name';
+                nameEl.value = name || '';
+                nameEl.placeholder = '—';
+                nameEl.spellcheck = false;
+                nameEl.addEventListener('change', () => {
+                    state.grid[dayIdx][periodIdx].name = nameEl.value;
+                    save();
+                });
+                const roomEl = document.createElement('input');
+                roomEl.className = 'sched-cell-room';
+                roomEl.value = room || '';
+                roomEl.placeholder = 'rm';
+                roomEl.spellcheck = false;
+                roomEl.addEventListener('change', () => {
+                    state.grid[dayIdx][periodIdx].room = roomEl.value;
+                    save();
+                });
+                cell.append(nameEl, roomEl);
+                return cell;
+            }
+
+            function render() {
+                grid.innerHTML = '';
+                grid.style.gridTemplateColumns = `60px repeat(${DAYS.length}, 1fr)`;
+                const { day: cDay, period: cPer } = currentSlot();
+
+                // Header row: blank corner + day labels
+                const corner = document.createElement('div');
+                corner.className = 'sched-corner';
+                grid.appendChild(corner);
+                DAYS.forEach((d, i) => {
+                    const h = document.createElement('div');
+                    h.className = 'sched-head';
+                    if (i === cDay) h.classList.add('today');
+                    h.textContent = d;
+                    grid.appendChild(h);
+                });
+
+                for (let p = 0; p < state.periods; p++) {
+                    const t = periodTimes(p);
+                    const periodHead = document.createElement('div');
+                    periodHead.className = 'sched-period';
+                    periodHead.innerHTML = `<span class="sched-period-num">P${p + 1}</span><span class="sched-period-time">${t.label}</span>`;
+                    grid.appendChild(periodHead);
+                    DAYS.forEach((_, dIdx) => {
+                        const c = state.grid[dIdx]?.[p] || { name: '', room: '' };
+                        const cell = makeCell(c.name, c.room, dIdx, p);
+                        if (dIdx === cDay && p === cPer) cell.classList.add('current');
+                        grid.appendChild(cell);
+                    });
+                }
+            }
+
+            plusBtn.addEventListener('click', () => {
+                if (state.periods >= 10) return;
+                state.periods++;
+                state.grid.forEach(d => d.push({ name: '', room: '' }));
+                save(); render();
             });
+            minusBtn.addEventListener('click', () => {
+                if (state.periods <= 1) return;
+                state.periods--;
+                state.grid.forEach(d => d.pop());
+                save(); render();
+            });
+
             load();
-            return () => container.classList.remove('fc-widget');
+            // Re-render once a minute so the "current period" highlight stays accurate.
+            liveTimer = setInterval(() => { if (state) render(); }, 60000);
+            return () => {
+                if (liveTimer) clearInterval(liveTimer);
+                container.classList.remove('sched-widget');
+            };
+        },
+    },
+    grades: {
+        id: 'grades', name: 'Grade Tracker', icon: '📊', category: 'Productivity',
+        sizes: ['small', 'tall'],
+        render(container) {
+            container.classList.add('grades-widget');
+            container.innerHTML = `
+                <div class="widget-label">
+                    <span>Grades</span>
+                    <div class="grades-overall"></div>
+                </div>
+                <div class="grades-list"></div>
+                <button class="grades-add">+ Add class</button>`;
+            const list = container.querySelector('.grades-list');
+            const overall = container.querySelector('.grades-overall');
+            const addBtn = container.querySelector('.grades-add');
+
+            let classes = [];
+
+            async function load() {
+                classes = await getStored('vipertab.grades', []);
+                render();
+            }
+            function save() { setStored('vipertab.grades', classes); }
+
+            function classAvg(c) {
+                if (!c.grades || !c.grades.length) return null;
+                let total = 0, weight = 0;
+                c.grades.forEach(g => {
+                    const max = parseFloat(g.max) || 100;
+                    const score = parseFloat(g.score);
+                    if (!isFinite(score) || max <= 0) return;
+                    total += (score / max) * 100;
+                    weight += 1;
+                });
+                return weight ? total / weight : null;
+            }
+            function letterFor(avg) {
+                if (avg == null) return '—';
+                if (avg >= 93) return 'A';     if (avg >= 90) return 'A−';
+                if (avg >= 87) return 'B+';    if (avg >= 83) return 'B';     if (avg >= 80) return 'B−';
+                if (avg >= 77) return 'C+';    if (avg >= 73) return 'C';     if (avg >= 70) return 'C−';
+                if (avg >= 67) return 'D+';    if (avg >= 63) return 'D';     if (avg >= 60) return 'D−';
+                return 'F';
+            }
+            function gradeTone(avg) {
+                if (avg == null) return '';
+                if (avg >= 90) return 'good';
+                if (avg >= 80) return 'ok';
+                if (avg >= 70) return 'warn';
+                return 'bad';
+            }
+
+            function render() {
+                list.innerHTML = '';
+                classes.forEach((c, ci) => {
+                    const row = document.createElement('details');
+                    row.className = 'grade-row';
+
+                    const head = document.createElement('summary');
+                    head.className = 'grade-head';
+
+                    const name = document.createElement('input');
+                    name.value = c.name || '';
+                    name.placeholder = 'Class name';
+                    name.className = 'grade-name';
+                    name.spellcheck = false;
+                    name.addEventListener('click', e => e.stopPropagation()); // don't toggle details
+                    name.addEventListener('change', () => { c.name = name.value; save(); });
+
+                    const avg = classAvg(c);
+                    const score = document.createElement('span');
+                    score.className = 'grade-score ' + gradeTone(avg);
+                    score.textContent = avg != null ? `${avg.toFixed(1)}%` : '—';
+
+                    const letter = document.createElement('span');
+                    letter.className = 'grade-letter ' + gradeTone(avg);
+                    letter.textContent = letterFor(avg);
+
+                    const del = document.createElement('button');
+                    del.className = 'grade-del';
+                    del.textContent = '×';
+                    del.title = 'Remove class';
+                    del.addEventListener('click', (e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        classes.splice(ci, 1); save(); render();
+                    });
+
+                    head.append(name, score, letter, del);
+                    row.append(head);
+
+                    const detail = document.createElement('div');
+                    detail.className = 'grade-detail';
+
+                    const items = document.createElement('div');
+                    items.className = 'grade-items';
+                    (c.grades || []).forEach((g, gi) => {
+                        const gRow = document.createElement('div');
+                        gRow.className = 'grade-item';
+                        const gName = document.createElement('span');
+                        gName.className = 'grade-item-name';
+                        gName.textContent = g.name || 'Assignment';
+                        const gScore = document.createElement('span');
+                        gScore.className = 'grade-item-score';
+                        gScore.textContent = `${g.score}/${g.max || 100}`;
+                        const gDel = document.createElement('button');
+                        gDel.className = 'grade-item-del';
+                        gDel.textContent = '×';
+                        gDel.addEventListener('click', () => {
+                            c.grades.splice(gi, 1); save(); render();
+                        });
+                        gRow.append(gName, gScore, gDel);
+                        items.append(gRow);
+                    });
+
+                    const addG = document.createElement('button');
+                    addG.className = 'grade-add-grade';
+                    addG.textContent = '+ Add assignment';
+                    addG.addEventListener('click', async () => {
+                        const name = window.prompt('Assignment name:');
+                        if (!name) return;
+                        const scoreStr = window.prompt('Score earned:');
+                        const score = parseFloat(scoreStr);
+                        if (!isFinite(score)) return;
+                        const maxStr = window.prompt('Out of (default 100):', '100');
+                        const max = parseFloat(maxStr) || 100;
+                        c.grades = c.grades || [];
+                        c.grades.push({ name: name.trim(), score, max });
+                        save(); render();
+                    });
+
+                    detail.append(items, addG);
+                    row.append(detail);
+                    list.append(row);
+                });
+
+                const allAvgs = classes.map(classAvg).filter(a => a != null);
+                if (allAvgs.length) {
+                    const overallAvg = allAvgs.reduce((s, a) => s + a, 0) / allAvgs.length;
+                    overall.innerHTML = '';
+                    const sp = document.createElement('span');
+                    sp.className = 'grades-overall-val ' + gradeTone(overallAvg);
+                    sp.textContent = `${overallAvg.toFixed(1)}% · ${letterFor(overallAvg)}`;
+                    overall.append(sp);
+                } else {
+                    overall.innerHTML = '';
+                }
+            }
+
+            addBtn.addEventListener('click', () => {
+                classes.push({ name: '', grades: [] });
+                save(); render();
+            });
+
+            load();
+            return () => container.classList.remove('grades-widget');
         },
     },
 
@@ -2446,7 +2630,7 @@ const DEFAULT_LAYOUT_DEV = {
 };
 const DEFAULT_LAYOUT_STUDENT = {
     slot1: 'schoollinks', slot2: 'duedates', slot3: 'pomodoro', slot4: 'notebook',
-    slot5: 'todo', slot6: 'gpa', slot7: 'flashcards', slot8: 'citation',
+    slot5: 'todo', slot6: 'gpa', slot7: 'grades', slot8: 'schedule',
 };
 
 // Widget pools per edition — strictly enforced. Widgets not in the current
@@ -2488,8 +2672,8 @@ const WIDGET_EDITIONS = {
     schoollinks: ['student'],
     duedates:    ['student'],
     gpa:         ['student'],
-    citation:    ['student'],
-    flashcards:  ['student'],
+    schedule:    ['student'],
+    grades:      ['student'],
 };
 
 function isWidgetAllowedInEdition(widgetId, edition) {
