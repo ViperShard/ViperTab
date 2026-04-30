@@ -2441,13 +2441,62 @@ const DEFAULT_LAYOUT_MAIN = {
     slot5: 'notes', slot6: 'recent',  slot7: 'worldclocks', slot8: 'visualizer',
 };
 const DEFAULT_LAYOUT_DEV = {
-    slot1: 'hackernews', slot2: 'timestamps', slot3: 'status', slot4: 'scratchpad',
+    slot1: 'hackernews', slot2: 'timestamps', slot3: 'uuid', slot4: 'scratchpad',
     slot5: 'encoder', slot6: 'jwt', slot7: 'hash', slot8: 'diff',
 };
 const DEFAULT_LAYOUT_STUDENT = {
     slot1: 'schoollinks', slot2: 'duedates', slot3: 'pomodoro', slot4: 'notebook',
-    slot5: 'todo', slot6: 'gpa', slot7: 'citation', slot8: 'visualizer',
+    slot5: 'todo', slot6: 'gpa', slot7: 'flashcards', slot8: 'citation',
 };
+
+// Widget pools per edition — strictly enforced. Widgets not in the current
+// edition's pool are hidden from the picker and replaced by the edition's
+// default if they appear in a saved layout.
+const WIDGET_EDITIONS = {
+    // Main / Zen general pool
+    clock:       ['main', 'zen'],
+    weather:     ['main', 'zen'],
+    status:      ['main', 'zen'],
+    notes:       ['main', 'zen'],
+    calculator:  ['main', 'zen'],
+    worldclocks: ['main', 'zen'],
+    recent:      ['main', 'zen'],
+    visualizer:  ['main', 'zen'],
+    crypto:      ['main', 'zen'],
+    quote:       ['main', 'zen'],
+    apod:        ['main', 'zen'],
+    stopwatch:   ['main', 'zen'],
+    dice:        ['main', 'zen'],
+    search:      ['main', 'zen'],
+    // Productivity essentials — also available to Student so they aren't forced
+    // to install Main for a focus timer / to-do list.
+    pomodoro:    ['main', 'student', 'zen'],
+    todo:        ['main', 'student', 'zen'],
+    // Dev specialty
+    hackernews: ['dev'],
+    regex:      ['dev'],
+    json:       ['dev'],
+    encoder:    ['dev'],
+    timestamps: ['dev'],
+    uuid:       ['dev'],
+    scratchpad: ['dev'],
+    jwt:        ['dev'],
+    hash:       ['dev'],
+    diff:       ['dev'],
+    // Student specialty
+    notebook:    ['student'],
+    schoollinks: ['student'],
+    duedates:    ['student'],
+    gpa:         ['student'],
+    citation:    ['student'],
+    flashcards:  ['student'],
+};
+
+function isWidgetAllowedInEdition(widgetId, edition) {
+    const allowed = WIDGET_EDITIONS[widgetId];
+    if (!allowed) return true; // unflagged widgets default to "available everywhere"
+    return allowed.includes(edition);
+}
 // Zen: only the clock slot and one optional secondary slot are rendered.
 // CSS reshapes the grid so the clock takes most of the screen and the secondary
 // sits below it.
@@ -2478,15 +2527,15 @@ function renderSlot(slotId, widgetId) {
     container.className = 'widget';
     container.dataset.slot = slotId;
     container.dataset.widget = widgetId;
-    const widget = WIDGET_LIBRARY[widgetId];
-    if (!widget) return;
+    let widget = WIDGET_LIBRARY[widgetId];
     const size = SLOT_SIZES[slotId];
-    if (!widget.sizes.includes(size)) {
-        // Widget doesn't fit this slot. Fall back to default.
-        const def = WIDGET_LIBRARY[DEFAULT_LAYOUT[slotId]];
-        container.dataset.widget = def.id;
-        activeWidgets[slotId] = def.render(container, size) || (() => {});
-        return;
+    // Reject if missing, doesn't fit the slot size, or isn't allowed in this edition.
+    const valid = widget && widget.sizes.includes(size) && isWidgetAllowedInEdition(widgetId, EDITION_ID);
+    if (!valid) {
+        const fallbackId = DEFAULT_LAYOUT[slotId] || DEFAULT_LAYOUT_MAIN[slotId];
+        widget = WIDGET_LIBRARY[fallbackId];
+        if (!widget) return;
+        container.dataset.widget = widget.id;
     }
     activeWidgets[slotId] = widget.render(container, size) || (() => {});
 }
@@ -2540,6 +2589,7 @@ async function renderWidgetPicker() {
         select.dataset.slot = slotId;
         Object.values(WIDGET_LIBRARY)
             .filter(w => w.sizes.includes(size))
+            .filter(w => isWidgetAllowedInEdition(w.id, EDITION_ID))
             .forEach(w => {
                 const opt = document.createElement('option');
                 opt.value = w.id;
