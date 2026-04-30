@@ -1,17 +1,17 @@
 {
-  "version": "1.4.2",
+  "version": "1.4.3",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Per-edition version tracking. Banner is now edition-aware: when your edition has an update it shows 'ViperTab[ Dev] vX.Y.Z available' (gold/green badge); when only the OTHER edition was bumped it shows an informational 'New ViperTab[ Dev] vX.Y.Z dropped — try it' (cyan badge). release.sh now accepts an optional edition arg (main/dev/both) for single-edition releases.\n",
+  "notes": "Dev edition: one-time auto-migration from glass theme to terminal theme on boot, so the rebuild applies even if you'd previously customized your install. Website: each edition card and version-history block now shows its current version; release history is split per-edition with separate Main and Dev legacy lists.\n",
   "editions": {
     "main": {
-      "version": "1.4.2",
+      "version": "1.4.3",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Per-edition version tracking. Banner is now edition-aware: when your edition has an update it shows 'ViperTab[ Dev] vX.Y.Z available' (gold/green badge); when only the OTHER edition was bumped it shows an informational 'New ViperTab[ Dev] vX.Y.Z dropped — try it' (cyan badge). release.sh now accepts an optional edition arg (main/dev/both) for single-edition releases.\n"
+      "notes": "Dev edition: one-time auto-migration from glass theme to terminal theme on boot, so the rebuild applies even if you'd previously customized your install. Website: each edition card and version-history block now shows its current version; release history is split per-edition with separate Main and Dev legacy lists.\n"
     },
     "dev": {
-      "version": "1.4.2",
+      "version": "1.4.3",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Per-edition version tracking. Banner is now edition-aware: when your edition has an update it shows 'ViperTab[ Dev] vX.Y.Z available' (gold/green badge); when only the OTHER edition was bumped it shows an informational 'New ViperTab[ Dev] vX.Y.Z dropped — try it' (cyan badge). release.sh now accepts an optional edition arg (main/dev/both) for single-edition releases.\n"
+      "notes": "Dev edition: one-time auto-migration from glass theme to terminal theme on boot, so the rebuild applies even if you'd previously customized your install. Website: each edition card and version-history block now shows its current version; release history is split per-edition with separate Main and Dev legacy lists.\n"
     }
   }
 }
