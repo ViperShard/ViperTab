@@ -1,10 +1,15 @@
 {
   "manifest_version": 3,
   "name": "ViperTab",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A macOS-inspired new tab page with Apple Glass UI, widgets, dock, and spotlight search.",
   "author": "ViperShard",
-  "permissions": ["tabs", "bookmarks", "sessions", "storage"],
+  "permissions": [
+    "tabs",
+    "bookmarks",
+    "sessions",
+    "storage"
+  ],
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },

@@ -1,5 +1,5 @@
 {
-  "version": "1.2.1",
+  "version": "1.2.2",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "v1.2.1: glass form controls (no more native white boxes), circular calc buttons, tighter dock translucency."
+  "notes": "Visualizer dropdowns now have explicit theme-aware colors so they're readable on Glass, Light, and OLED themes regardless of wallpaper.\n"
 }
