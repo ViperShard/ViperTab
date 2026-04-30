@@ -1,22 +1,27 @@
 {
   "version": "1.4.4",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Removed all 'Apple Glass' branding to avoid trademark conflict — same translucent glass UI, just described as 'glass UI' / 'glass widgets'. About modal now reads the edition name and version from the manifest dynamically.\n",
+  "notes": "ViperTab Zen edition launch — minimalist new tab. Big centered digital clock taking the whole screen, auto-hiding menu bar (slides in on hover near top) and dock (slides in near bottom), no widget chrome, just glass and air. Default theme: Zen Dark (black bg / white text / gold accent); also Zen Light (cream / black / gold). Accent color is fully customizable via Control Center color picker. One optional secondary widget below the clock — defaults to weather, swappable to anything from Control Center.\n",
   "editions": {
     "main": {
       "version": "1.4.4",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Removed all 'Apple Glass' branding to avoid trademark conflict — same translucent glass UI, just described as 'glass UI' / 'glass widgets'. About modal now reads the edition name and version from the manifest dynamically.\n"
+      "notes": "ViperTab Zen edition launch — minimalist new tab. Big centered digital clock taking the whole screen, auto-hiding menu bar (slides in on hover near top) and dock (slides in near bottom), no widget chrome, just glass and air. Default theme: Zen Dark (black bg / white text / gold accent); also Zen Light (cream / black / gold). Accent color is fully customizable via Control Center color picker. One optional secondary widget below the clock — defaults to weather, swappable to anything from Control Center.\n"
     },
     "dev": {
       "version": "1.4.4",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Removed all 'Apple Glass' branding to avoid trademark conflict — same translucent glass UI, just described as 'glass UI' / 'glass widgets'. About modal now reads the edition name and version from the manifest dynamically.\n"
+      "notes": "ViperTab Zen edition launch — minimalist new tab. Big centered digital clock taking the whole screen, auto-hiding menu bar (slides in on hover near top) and dock (slides in near bottom), no widget chrome, just glass and air. Default theme: Zen Dark (black bg / white text / gold accent); also Zen Light (cream / black / gold). Accent color is fully customizable via Control Center color picker. One optional secondary widget below the clock — defaults to weather, swappable to anything from Control Center.\n"
     },
     "student": {
       "version": "1.0.1",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip",
-      "notes": "Removed all 'Apple Glass' branding to avoid trademark conflict — same translucent glass UI, just described as 'glass UI' / 'glass widgets'. About modal now reads the edition name and version from the manifest dynamically.\n"
+      "notes": "ViperTab Zen edition launch — minimalist new tab. Big centered digital clock taking the whole screen, auto-hiding menu bar (slides in on hover near top) and dock (slides in near bottom), no widget chrome, just glass and air. Default theme: Zen Dark (black bg / white text / gold accent); also Zen Light (cream / black / gold). Accent color is fully customizable via Control Center color picker. One optional secondary widget below the clock — defaults to weather, swappable to anything from Control Center.\n"
+    },
+    "zen": {
+      "version": "1.0.0",
+      "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip",
+      "notes": "ViperTab Zen edition launch — minimalist new tab. Big centered digital clock taking the whole screen, auto-hiding menu bar (slides in on hover near top) and dock (slides in near bottom), no widget chrome, just glass and air. Default theme: Zen Dark (black bg / white text / gold accent); also Zen Light (cream / black / gold). Accent color is fully customizable via Control Center color picker. One optional secondary widget below the clock — defaults to weather, swappable to anything from Control Center.\n"
     }
   }
 }
