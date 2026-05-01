@@ -1,27 +1,27 @@
 {
-  "version": "1.4.11",
+  "version": "1.4.12",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Visualizer: Zen mode (full-screen takeover). New corner-brackets button on the Sound widget expands the visualizer to fill the whole new tab — hides menu bar, dock, other widgets, and wallpaper. Floating glass controls fade out after 2s of mouse idle (cursor hides too); move the mouse to bring them back. Esc exits at any time.\n",
+  "notes": "Move Zen Visualizer to where it belongs: ViperTab Zen edition. Removed the fullscreen takeover button from Main's Sound widget (it was misplaced there last release). Added a Zen-edition-only equalizer button to the menu bar that opens the visualizer in a full-screen overlay — controls auto-fade on idle, Esc exits. Main's Sound widget is back to plain type/palette/play controls; the fullscreen mode is now exclusive to Zen.\n",
   "editions": {
     "main": {
-      "version": "1.4.11",
+      "version": "1.4.12",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Visualizer: Zen mode (full-screen takeover). New corner-brackets button on the Sound widget expands the visualizer to fill the whole new tab — hides menu bar, dock, other widgets, and wallpaper. Floating glass controls fade out after 2s of mouse idle (cursor hides too); move the mouse to bring them back. Esc exits at any time.\n"
+      "notes": "Move Zen Visualizer to where it belongs: ViperTab Zen edition. Removed the fullscreen takeover button from Main's Sound widget (it was misplaced there last release). Added a Zen-edition-only equalizer button to the menu bar that opens the visualizer in a full-screen overlay — controls auto-fade on idle, Esc exits. Main's Sound widget is back to plain type/palette/play controls; the fullscreen mode is now exclusive to Zen.\n"
     },
     "dev": {
       "version": "1.4.9",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Visualizer: Zen mode (full-screen takeover). New corner-brackets button on the Sound widget expands the visualizer to fill the whole new tab — hides menu bar, dock, other widgets, and wallpaper. Floating glass controls fade out after 2s of mouse idle (cursor hides too); move the mouse to bring them back. Esc exits at any time.\n"
+      "notes": "Move Zen Visualizer to where it belongs: ViperTab Zen edition. Removed the fullscreen takeover button from Main's Sound widget (it was misplaced there last release). Added a Zen-edition-only equalizer button to the menu bar that opens the visualizer in a full-screen overlay — controls auto-fade on idle, Esc exits. Main's Sound widget is back to plain type/palette/play controls; the fullscreen mode is now exclusive to Zen.\n"
     },
     "student": {
       "version": "1.0.8",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip",
-      "notes": "Visualizer: Zen mode (full-screen takeover). New corner-brackets button on the Sound widget expands the visualizer to fill the whole new tab — hides menu bar, dock, other widgets, and wallpaper. Floating glass controls fade out after 2s of mouse idle (cursor hides too); move the mouse to bring them back. Esc exits at any time.\n"
+      "notes": "Move Zen Visualizer to where it belongs: ViperTab Zen edition. Removed the fullscreen takeover button from Main's Sound widget (it was misplaced there last release). Added a Zen-edition-only equalizer button to the menu bar that opens the visualizer in a full-screen overlay — controls auto-fade on idle, Esc exits. Main's Sound widget is back to plain type/palette/play controls; the fullscreen mode is now exclusive to Zen.\n"
     },
     "zen": {
-      "version": "1.0.11",
+      "version": "1.0.12",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip",
-      "notes": "Visualizer: Zen mode (full-screen takeover). New corner-brackets button on the Sound widget expands the visualizer to fill the whole new tab — hides menu bar, dock, other widgets, and wallpaper. Floating glass controls fade out after 2s of mouse idle (cursor hides too); move the mouse to bring them back. Esc exits at any time.\n"
+      "notes": "Move Zen Visualizer to where it belongs: ViperTab Zen edition. Removed the fullscreen takeover button from Main's Sound widget (it was misplaced there last release). Added a Zen-edition-only equalizer button to the menu bar that opens the visualizer in a full-screen overlay — controls auto-fade on idle, Esc exits. Main's Sound widget is back to plain type/palette/play controls; the fullscreen mode is now exclusive to Zen.\n"
     }
   }
 }
