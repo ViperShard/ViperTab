@@ -451,7 +451,7 @@ const WIDGET_LIBRARY = {
             container.innerHTML = `
                 <div class="widget-label"><span>Weather</span></div>
                 <div class="weather-temp">—</div>
-                <div class="weather-cond">Allow location to load</div>
+                <div class="weather-cond">Loading…</div>
                 <div class="weather-loc"></div>`;
             const tempEl = container.querySelector('.weather-temp');
             const condEl = container.querySelector('.weather-cond');
@@ -466,14 +466,34 @@ const WIDGET_LIBRARY = {
                 85: 'Snow showers', 86: 'Snow showers',
                 95: 'Thunderstorm', 96: 'Thunderstorm', 99: 'Thunderstorm',
             };
-            async function load() {
-                if (!navigator.geolocation) { condEl.textContent = 'Geolocation unavailable'; return; }
-                let pos;
+            // Hardcoded fallback if every geolocation method fails — NYC.
+            const FALLBACK = { latitude: 40.7128, longitude: -74.0060, label: 'New York, NY' };
+
+            async function resolveLocation() {
+                // Primary: IP-based geolocation (no browser permission needed).
+                // ipapi.co's /json/ endpoint is CORS-enabled, returns lat/lng + city.
                 try {
-                    pos = await new Promise((res, rej) =>
-                        navigator.geolocation.getCurrentPosition(res, rej, { timeout: 8000, maximumAge: 600000 }));
-                } catch { condEl.textContent = 'Allow location for weather'; return; }
-                const { latitude, longitude } = pos.coords;
+                    const r = await fetch('https://ipapi.co/json/');
+                    if (r.ok) {
+                        const d = await r.json();
+                        if (typeof d.latitude === 'number' && typeof d.longitude === 'number') {
+                            return {
+                                latitude: d.latitude,
+                                longitude: d.longitude,
+                                label: [d.city, d.region_code || d.region].filter(Boolean).join(', '),
+                            };
+                        }
+                    }
+                } catch { /* ipapi unavailable, fall through */ }
+
+                // Last resort: hardcoded default. Weather still shows.
+                return FALLBACK;
+            }
+
+            async function load() {
+                const loc = await resolveLocation();
+                const { latitude, longitude } = loc;
+                if (loc.label) locEl.textContent = loc.label;
                 const unit = PREFS.tempUnit;
                 const symbol = unit === 'celsius' ? '°C' : '°F';
                 try {
@@ -482,11 +502,6 @@ const WIDGET_LIBRARY = {
                     tempEl.textContent = `${Math.round(d.current.temperature_2m)}${symbol}`;
                     condEl.textContent = codeMap[d.current.weather_code] ?? '—';
                 } catch { condEl.textContent = 'Weather offline'; }
-                try {
-                    const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
-                    const d = await r.json();
-                    locEl.textContent = [d.city || d.locality, d.principalSubdivisionCode?.split('-').pop()].filter(Boolean).join(', ');
-                } catch { /* ignore */ }
             }
             load();
             const off = events.on('prefs', load);
