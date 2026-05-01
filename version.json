@@ -1,27 +1,27 @@
 {
   "version": "1.4.9",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Zen rebuild — fresh zip, no source changes. Re-publishing to rule out a cached / stale-download manifest issue.\n",
+  "notes": "Zen: fullscreen toggle button. Click the new corner-brackets icon in the menu bar to expand the Zen new tab over the entire browser — URL bar, tabs, and bookmarks bar all hide. Esc exits, button icon flips to inward brackets while fullscreen. Zen-only (CSS-hidden in other editions).\n",
   "editions": {
     "main": {
       "version": "1.4.9",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Zen rebuild — fresh zip, no source changes. Re-publishing to rule out a cached / stale-download manifest issue.\n"
+      "notes": "Zen: fullscreen toggle button. Click the new corner-brackets icon in the menu bar to expand the Zen new tab over the entire browser — URL bar, tabs, and bookmarks bar all hide. Esc exits, button icon flips to inward brackets while fullscreen. Zen-only (CSS-hidden in other editions).\n"
     },
     "dev": {
       "version": "1.4.9",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Zen rebuild — fresh zip, no source changes. Re-publishing to rule out a cached / stale-download manifest issue.\n"
+      "notes": "Zen: fullscreen toggle button. Click the new corner-brackets icon in the menu bar to expand the Zen new tab over the entire browser — URL bar, tabs, and bookmarks bar all hide. Esc exits, button icon flips to inward brackets while fullscreen. Zen-only (CSS-hidden in other editions).\n"
     },
     "student": {
       "version": "1.0.8",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip",
-      "notes": "Zen rebuild — fresh zip, no source changes. Re-publishing to rule out a cached / stale-download manifest issue.\n"
+      "notes": "Zen: fullscreen toggle button. Click the new corner-brackets icon in the menu bar to expand the Zen new tab over the entire browser — URL bar, tabs, and bookmarks bar all hide. Esc exits, button icon flips to inward brackets while fullscreen. Zen-only (CSS-hidden in other editions).\n"
     },
     "zen": {
-      "version": "1.0.7",
+      "version": "1.0.8",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip",
-      "notes": "Zen rebuild — fresh zip, no source changes. Re-publishing to rule out a cached / stale-download manifest issue.\n"
+      "notes": "Zen: fullscreen toggle button. Click the new corner-brackets icon in the menu bar to expand the Zen new tab over the entire browser — URL bar, tabs, and bookmarks bar all hide. Esc exits, button icon flips to inward brackets while fullscreen. Zen-only (CSS-hidden in other editions).\n"
     }
   }
 }
