@@ -1009,11 +1009,20 @@ const WIDGET_LIBRARY = {
             ro.observe(canvas);
             const start = async () => {
                 try {
-                    stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-                } catch { status.textContent = 'Capture cancelled'; return; }
+                    // displaySurface:'browser' tells Edge/Chrome to default the
+                    // picker to the Tab pane so users don't accidentally land
+                    // on Window/Screen (which don't expose audio sharing).
+                    stream = await navigator.mediaDevices.getDisplayMedia({
+                        video: { displaySurface: 'browser' },
+                        audio: true,
+                    });
+                } catch (e) {
+                    status.textContent = 'Capture cancelled or blocked: ' + (e?.name || e?.message || 'unknown');
+                    return;
+                }
                 const audioTracks = stream.getAudioTracks();
                 if (!audioTracks.length) {
-                    status.textContent = 'No audio shared — re-pick and check "Share audio"';
+                    status.textContent = 'No audio shared — click play again, pick a Tab, and tick "Share tab audio"';
                     stream.getTracks().forEach(t => t.stop());
                     stream = null; return;
                 }
@@ -3347,6 +3356,7 @@ function initZenVisualizer() {
         document.body.appendChild(overlay);
         document.body.classList.add('viz-stage-mode');
         cleanupWidget = WIDGET_LIBRARY.visualizer.render(overlay, 'wide');
+
         // Always-visible close button so the user has an obvious exit
         const closeBtn = document.createElement('button');
         closeBtn.className = 'viz-stage-close';
@@ -3354,7 +3364,34 @@ function initZenVisualizer() {
         closeBtn.textContent = '×';
         closeBtn.addEventListener('click', close);
         document.body.appendChild(closeBtn);
+
+        // Giant centered start button — guarantees the user sees how to begin.
+        // Clicking it just forwards to the small play button in the floating
+        // controls (so the same user-gesture chain triggers getDisplayMedia).
+        const startHint = document.createElement('button');
+        startHint.className = 'viz-stage-start';
+        startHint.innerHTML = `
+            <div class="viz-stage-start-icon">▶</div>
+            <div class="viz-stage-start-text">Click to start visualizer</div>
+            <div class="viz-stage-start-sub">In the picker: select <b>Edge tab</b>, pick the tab playing audio, tick <b>Share tab audio</b></div>`;
+        startHint.addEventListener('click', () => {
+            const playBtn = overlay.querySelector('.viz-toggle');
+            if (playBtn) playBtn.click();
+        });
+        document.body.appendChild(startHint);
+
+        // Hide the start hint once the play button activates (audio captured)
+        const observer = new MutationObserver(() => {
+            const playBtn = overlay.querySelector('.viz-toggle');
+            const isActive = playBtn?.classList.contains('active');
+            startHint.style.display = isActive ? 'none' : '';
+        });
+        observer.observe(overlay, { subtree: true, attributes: true, attributeFilter: ['class'] });
+
         overlay._closeBtn = closeBtn;
+        overlay._startHint = startHint;
+        overlay._observer = observer;
+
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('keydown', onKey);
         onMouseMove();
@@ -3363,7 +3400,9 @@ function initZenVisualizer() {
         if (!overlay) return;
         try { cleanupWidget && cleanupWidget(); } catch {}
         cleanupWidget = null;
+        try { overlay._observer?.disconnect(); } catch {}
         if (overlay._closeBtn) overlay._closeBtn.remove();
+        if (overlay._startHint) overlay._startHint.remove();
         overlay.remove();
         overlay = null;
         document.body.classList.remove('viz-stage-mode', 'viz-stage-idle');
