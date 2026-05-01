@@ -869,19 +869,31 @@ button { cursor: pointer; }
 .ac-pin    { fill: var(--text); opacity: 0.92; }
 .ac-center { fill: var(--accent, #c9a36b); }
 
-/* Zen edition: huge centered analog clock */
-[data-edition="zen"] [data-slot="slot4"] .analog-clock {
-    width: min(80vh, 80vw, 720px);
-    height: min(80vh, 80vw, 720px);
-    max-width: none;
-    margin: 0 auto;
-}
+/* Zen edition: analog clock fills slot 4 without overflowing into slot 7 */
 [data-edition="zen"] [data-slot="slot4"] .clock-widget {
+    height: 100%;
     align-items: center;
     justify-content: center;
+    gap: 18px;
+    padding: 12px 8px;
+}
+[data-edition="zen"] [data-slot="slot4"] .analog-clock {
+    /* Take whatever vertical space is left after the date underneath, but
+       keep a 1:1 aspect ratio so the face stays circular. The flex shrink
+       + min-height: 0 lets the SVG yield to the container instead of
+       bleeding into the slot below. */
+    flex: 1 1 0;
+    min-height: 0;
+    height: auto;
+    width: auto;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: 1 / 1;
+    margin: 0;
 }
 [data-edition="zen"] [data-slot="slot4"] .analog-clock + .widget-date {
-    margin-top: 28px;
+    flex: 0 0 auto;
+    margin-top: 0;
     text-align: center;
 }
 
