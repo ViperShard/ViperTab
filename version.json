@@ -1,27 +1,27 @@
 {
   "version": "1.4.12",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Zen Visualizer: fix overlay not showing. The body-level container now correctly covers the viewport (position:fixed inset:0). Added an always-visible × close button in the top-right corner so there's an obvious exit beyond Esc. Floating glass controls with the play button + type/palette dropdowns now show up the moment the overlay opens.\n",
+  "notes": "Zen Visualizer: giant centered start button so the tab-share picker actually opens\n",
   "editions": {
     "main": {
       "version": "1.4.12",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Zen Visualizer: fix overlay not showing. The body-level container now correctly covers the viewport (position:fixed inset:0). Added an always-visible × close button in the top-right corner so there's an obvious exit beyond Esc. Floating glass controls with the play button + type/palette dropdowns now show up the moment the overlay opens.\n"
+      "notes": "Zen Visualizer: giant centered start button so the tab-share picker actually opens\n"
     },
     "dev": {
       "version": "1.4.9",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Zen Visualizer: fix overlay not showing. The body-level container now correctly covers the viewport (position:fixed inset:0). Added an always-visible × close button in the top-right corner so there's an obvious exit beyond Esc. Floating glass controls with the play button + type/palette dropdowns now show up the moment the overlay opens.\n"
+      "notes": "Zen Visualizer: giant centered start button so the tab-share picker actually opens\n"
     },
     "student": {
       "version": "1.0.8",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip",
-      "notes": "Zen Visualizer: fix overlay not showing. The body-level container now correctly covers the viewport (position:fixed inset:0). Added an always-visible × close button in the top-right corner so there's an obvious exit beyond Esc. Floating glass controls with the play button + type/palette dropdowns now show up the moment the overlay opens.\n"
+      "notes": "Zen Visualizer: giant centered start button so the tab-share picker actually opens\n"
     },
     "zen": {
-      "version": "1.0.13",
+      "version": "1.0.14",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip",
-      "notes": "Zen Visualizer: fix overlay not showing. The body-level container now correctly covers the viewport (position:fixed inset:0). Added an always-visible × close button in the top-right corner so there's an obvious exit beyond Esc. Floating glass controls with the play button + type/palette dropdowns now show up the moment the overlay opens.\n"
+      "notes": "Zen Visualizer: giant centered start button so the tab-share picker actually opens\n"
     }
   }
 }
