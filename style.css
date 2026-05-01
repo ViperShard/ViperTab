@@ -1028,6 +1028,92 @@ button { cursor: pointer; }
 .visualizer-widget {
     min-height: 0;
 }
+
+/* Zen mode — visualizer takes over the entire viewport */
+body.viz-stage-mode .menu-bar,
+body.viz-stage-mode .dock,
+body.viz-stage-mode .update-banner-stack,
+body.viz-stage-mode .settings-overlay,
+body.viz-stage-mode .spotlight-overlay,
+body.viz-stage-mode .info-overlay,
+body.viz-stage-mode .dropdown-menu,
+body.viz-stage-mode .desktop > .widget-grid > .widget:not(.viz-stage-active),
+body.viz-stage-mode .wallpaper {
+    display: none !important;
+}
+body.viz-stage-mode { background: #000; }
+body.viz-stage-mode .desktop {
+    inset: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+}
+body.viz-stage-mode .widget-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 1fr !important;
+    grid-template-areas: "stage" !important;
+    gap: 0 !important;
+    height: 100% !important;
+}
+.visualizer-widget.viz-stage-active {
+    grid-area: stage !important;
+    background: #000 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+.visualizer-widget.viz-stage-active .viz-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+}
+
+/* Floating widget label + status bar in stage mode */
+.visualizer-widget.viz-stage-active .widget-label {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    padding: 9px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    margin: 0 !important;
+    z-index: 251;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.visualizer-widget.viz-stage-active .viz-status {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(20px);
+    padding: 6px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 0;
+    z-index: 251;
+    font-size: 12px;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Idle state — fade controls out after 2s of no mouse movement */
+body.viz-stage-mode.viz-stage-idle { cursor: none; }
+body.viz-stage-mode.viz-stage-idle .visualizer-widget.viz-stage-active .widget-label {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-12px);
+    pointer-events: none;
+}
+body.viz-stage-mode.viz-stage-idle .visualizer-widget.viz-stage-active .viz-status {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+    pointer-events: none;
+}
 .viz-controls {
     display: flex;
     gap: 6px;
