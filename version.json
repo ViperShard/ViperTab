@@ -1,27 +1,27 @@
 {
   "version": "1.4.9",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Student: Photo Search replaces Class Schedule and Grade Tracker. Bring-your-own Pixabay API key (free, 30-second signup, 5000 requests/hour rate limit). Search bar + image grid, click to open full size, right-click to copy URL. Setup screen walks the user through grabbing a key on first launch. Slot 7 now uses Quote of the Day (added to Student pool).\n",
+  "notes": "Zen rebuild — fresh zip, no source changes. Re-publishing to rule out a cached / stale-download manifest issue.\n",
   "editions": {
     "main": {
       "version": "1.4.9",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Student: Photo Search replaces Class Schedule and Grade Tracker. Bring-your-own Pixabay API key (free, 30-second signup, 5000 requests/hour rate limit). Search bar + image grid, click to open full size, right-click to copy URL. Setup screen walks the user through grabbing a key on first launch. Slot 7 now uses Quote of the Day (added to Student pool).\n"
+      "notes": "Zen rebuild — fresh zip, no source changes. Re-publishing to rule out a cached / stale-download manifest issue.\n"
     },
     "dev": {
       "version": "1.4.9",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Student: Photo Search replaces Class Schedule and Grade Tracker. Bring-your-own Pixabay API key (free, 30-second signup, 5000 requests/hour rate limit). Search bar + image grid, click to open full size, right-click to copy URL. Setup screen walks the user through grabbing a key on first launch. Slot 7 now uses Quote of the Day (added to Student pool).\n"
+      "notes": "Zen rebuild — fresh zip, no source changes. Re-publishing to rule out a cached / stale-download manifest issue.\n"
     },
     "student": {
       "version": "1.0.8",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip",
-      "notes": "Student: Photo Search replaces Class Schedule and Grade Tracker. Bring-your-own Pixabay API key (free, 30-second signup, 5000 requests/hour rate limit). Search bar + image grid, click to open full size, right-click to copy URL. Setup screen walks the user through grabbing a key on first launch. Slot 7 now uses Quote of the Day (added to Student pool).\n"
+      "notes": "Zen rebuild — fresh zip, no source changes. Re-publishing to rule out a cached / stale-download manifest issue.\n"
     },
     "zen": {
-      "version": "1.0.6",
+      "version": "1.0.7",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip",
-      "notes": "Student: Photo Search replaces Class Schedule and Grade Tracker. Bring-your-own Pixabay API key (free, 30-second signup, 5000 requests/hour rate limit). Search bar + image grid, click to open full size, right-click to copy URL. Setup screen walks the user through grabbing a key on first launch. Slot 7 now uses Quote of the Day (added to Student pool).\n"
+      "notes": "Zen rebuild — fresh zip, no source changes. Re-publishing to rule out a cached / stale-download manifest issue.\n"
     }
   }
 }
