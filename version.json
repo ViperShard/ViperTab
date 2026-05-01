@@ -1,27 +1,27 @@
 {
   "version": "1.4.9",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Student edition: replaced Flashcards and Citation Generator with two widgets students actually use every day. Class Schedule is a weekly Mon–Fri grid with editable cells (subject + room), auto-default 7-period times, and the current period highlighted in gold based on the time of day. Grade Tracker shows per-class current grade percentage and letter from logged assignments (score / total), with overall average tinted by performance (green ≥90, gold ≥80, orange ≥70, red below). Existing Student installs that had Flashcards or Citation in their layout will see the new defaults — Class Schedule in the wide slot, Grade Tracker in the small slot beside GPA.\n",
+  "notes": "Student: Photo Search replaces Class Schedule and Grade Tracker. Bring-your-own Pixabay API key (free, 30-second signup, 5000 requests/hour rate limit). Search bar + image grid, click to open full size, right-click to copy URL. Setup screen walks the user through grabbing a key on first launch. Slot 7 now uses Quote of the Day (added to Student pool).\n",
   "editions": {
     "main": {
       "version": "1.4.9",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Student edition: replaced Flashcards and Citation Generator with two widgets students actually use every day. Class Schedule is a weekly Mon–Fri grid with editable cells (subject + room), auto-default 7-period times, and the current period highlighted in gold based on the time of day. Grade Tracker shows per-class current grade percentage and letter from logged assignments (score / total), with overall average tinted by performance (green ≥90, gold ≥80, orange ≥70, red below). Existing Student installs that had Flashcards or Citation in their layout will see the new defaults — Class Schedule in the wide slot, Grade Tracker in the small slot beside GPA.\n"
+      "notes": "Student: Photo Search replaces Class Schedule and Grade Tracker. Bring-your-own Pixabay API key (free, 30-second signup, 5000 requests/hour rate limit). Search bar + image grid, click to open full size, right-click to copy URL. Setup screen walks the user through grabbing a key on first launch. Slot 7 now uses Quote of the Day (added to Student pool).\n"
     },
     "dev": {
       "version": "1.4.9",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Student edition: replaced Flashcards and Citation Generator with two widgets students actually use every day. Class Schedule is a weekly Mon–Fri grid with editable cells (subject + room), auto-default 7-period times, and the current period highlighted in gold based on the time of day. Grade Tracker shows per-class current grade percentage and letter from logged assignments (score / total), with overall average tinted by performance (green ≥90, gold ≥80, orange ≥70, red below). Existing Student installs that had Flashcards or Citation in their layout will see the new defaults — Class Schedule in the wide slot, Grade Tracker in the small slot beside GPA.\n"
+      "notes": "Student: Photo Search replaces Class Schedule and Grade Tracker. Bring-your-own Pixabay API key (free, 30-second signup, 5000 requests/hour rate limit). Search bar + image grid, click to open full size, right-click to copy URL. Setup screen walks the user through grabbing a key on first launch. Slot 7 now uses Quote of the Day (added to Student pool).\n"
     },
     "student": {
-      "version": "1.0.7",
+      "version": "1.0.8",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip",
-      "notes": "Student edition: replaced Flashcards and Citation Generator with two widgets students actually use every day. Class Schedule is a weekly Mon–Fri grid with editable cells (subject + room), auto-default 7-period times, and the current period highlighted in gold based on the time of day. Grade Tracker shows per-class current grade percentage and letter from logged assignments (score / total), with overall average tinted by performance (green ≥90, gold ≥80, orange ≥70, red below). Existing Student installs that had Flashcards or Citation in their layout will see the new defaults — Class Schedule in the wide slot, Grade Tracker in the small slot beside GPA.\n"
+      "notes": "Student: Photo Search replaces Class Schedule and Grade Tracker. Bring-your-own Pixabay API key (free, 30-second signup, 5000 requests/hour rate limit). Search bar + image grid, click to open full size, right-click to copy URL. Setup screen walks the user through grabbing a key on first launch. Slot 7 now uses Quote of the Day (added to Student pool).\n"
     },
     "zen": {
       "version": "1.0.6",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip",
-      "notes": "Student edition: replaced Flashcards and Citation Generator with two widgets students actually use every day. Class Schedule is a weekly Mon–Fri grid with editable cells (subject + room), auto-default 7-period times, and the current period highlighted in gold based on the time of day. Grade Tracker shows per-class current grade percentage and letter from logged assignments (score / total), with overall average tinted by performance (green ≥90, gold ≥80, orange ≥70, red below). Existing Student installs that had Flashcards or Citation in their layout will see the new defaults — Class Schedule in the wide slot, Grade Tracker in the small slot beside GPA.\n"
+      "notes": "Student: Photo Search replaces Class Schedule and Grade Tracker. Bring-your-own Pixabay API key (free, 30-second signup, 5000 requests/hour rate limit). Search bar + image grid, click to open full size, right-click to copy URL. Setup screen walks the user through grabbing a key on first launch. Slot 7 now uses Quote of the Day (added to Student pool).\n"
     }
   }
 }
