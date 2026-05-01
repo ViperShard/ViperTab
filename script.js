@@ -3273,6 +3273,7 @@ async function boot() {
 
     if (IS_ZEN_EDITION) initZenChrome();
     if (IS_ZEN_EDITION) applyZenAccent(PREFS.zenAccent);
+    if (IS_ZEN_EDITION) initFullscreenButton();
 
     checkForUpdates();
 }
@@ -3300,6 +3301,27 @@ function initZenChrome() {
 function applyZenAccent(color) {
     if (!color) return;
     document.documentElement.style.setProperty('--zen-accent', color);
+}
+
+function initFullscreenButton() {
+    const btn = $('fullscreen-btn');
+    if (!btn) return;
+    const path = $('fs-icon-path');
+    const ENTER = 'M5 9V5h4M19 9V5h-4M5 15v4h4M19 15v4h-4';
+    const EXIT  = 'M9 5v4H5M15 5v4h4M9 19v-4H5M15 19v-4h4';
+    btn.addEventListener('click', async () => {
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else {
+            try { await document.documentElement.requestFullscreen(); }
+            catch { /* user gesture required, etc. */ }
+        }
+    });
+    document.addEventListener('fullscreenchange', () => {
+        const fs = !!document.fullscreenElement;
+        if (path) path.setAttribute('d', fs ? EXIT : ENTER);
+        btn.title = fs ? 'Exit fullscreen (Esc)' : 'Enter fullscreen';
+    });
 }
 
 document.addEventListener('DOMContentLoaded', boot);

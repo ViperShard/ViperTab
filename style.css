@@ -203,6 +203,10 @@
 [data-edition="zen"] .menu-clock { color: var(--accent); }
 [data-edition="zen"] .menu-item.bold { color: var(--accent); }
 
+/* Fullscreen button — Zen edition only */
+.menu-fullscreen { display: none; }
+[data-edition="zen"] .menu-fullscreen { display: flex; }
+
 /* Multi-theme seg-toggle wrapping */
 .seg-toggle-wrap { flex-wrap: wrap; gap: 2px; }
 .seg-toggle-wrap button { flex: 1 1 60px; padding: 5px 4px; font-size: 11px; }
