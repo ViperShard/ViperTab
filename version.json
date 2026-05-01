@@ -1,27 +1,27 @@
 {
   "version": "1.4.12",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Move Zen Visualizer to where it belongs: ViperTab Zen edition. Removed the fullscreen takeover button from Main's Sound widget (it was misplaced there last release). Added a Zen-edition-only equalizer button to the menu bar that opens the visualizer in a full-screen overlay — controls auto-fade on idle, Esc exits. Main's Sound widget is back to plain type/palette/play controls; the fullscreen mode is now exclusive to Zen.\n",
+  "notes": "Zen Visualizer: fix overlay not showing. The body-level container now correctly covers the viewport (position:fixed inset:0). Added an always-visible × close button in the top-right corner so there's an obvious exit beyond Esc. Floating glass controls with the play button + type/palette dropdowns now show up the moment the overlay opens.\n",
   "editions": {
     "main": {
       "version": "1.4.12",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Move Zen Visualizer to where it belongs: ViperTab Zen edition. Removed the fullscreen takeover button from Main's Sound widget (it was misplaced there last release). Added a Zen-edition-only equalizer button to the menu bar that opens the visualizer in a full-screen overlay — controls auto-fade on idle, Esc exits. Main's Sound widget is back to plain type/palette/play controls; the fullscreen mode is now exclusive to Zen.\n"
+      "notes": "Zen Visualizer: fix overlay not showing. The body-level container now correctly covers the viewport (position:fixed inset:0). Added an always-visible × close button in the top-right corner so there's an obvious exit beyond Esc. Floating glass controls with the play button + type/palette dropdowns now show up the moment the overlay opens.\n"
     },
     "dev": {
       "version": "1.4.9",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Move Zen Visualizer to where it belongs: ViperTab Zen edition. Removed the fullscreen takeover button from Main's Sound widget (it was misplaced there last release). Added a Zen-edition-only equalizer button to the menu bar that opens the visualizer in a full-screen overlay — controls auto-fade on idle, Esc exits. Main's Sound widget is back to plain type/palette/play controls; the fullscreen mode is now exclusive to Zen.\n"
+      "notes": "Zen Visualizer: fix overlay not showing. The body-level container now correctly covers the viewport (position:fixed inset:0). Added an always-visible × close button in the top-right corner so there's an obvious exit beyond Esc. Floating glass controls with the play button + type/palette dropdowns now show up the moment the overlay opens.\n"
     },
     "student": {
       "version": "1.0.8",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip",
-      "notes": "Move Zen Visualizer to where it belongs: ViperTab Zen edition. Removed the fullscreen takeover button from Main's Sound widget (it was misplaced there last release). Added a Zen-edition-only equalizer button to the menu bar that opens the visualizer in a full-screen overlay — controls auto-fade on idle, Esc exits. Main's Sound widget is back to plain type/palette/play controls; the fullscreen mode is now exclusive to Zen.\n"
+      "notes": "Zen Visualizer: fix overlay not showing. The body-level container now correctly covers the viewport (position:fixed inset:0). Added an always-visible × close button in the top-right corner so there's an obvious exit beyond Esc. Floating glass controls with the play button + type/palette dropdowns now show up the moment the overlay opens.\n"
     },
     "zen": {
-      "version": "1.0.12",
+      "version": "1.0.13",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip",
-      "notes": "Move Zen Visualizer to where it belongs: ViperTab Zen edition. Removed the fullscreen takeover button from Main's Sound widget (it was misplaced there last release). Added a Zen-edition-only equalizer button to the menu bar that opens the visualizer in a full-screen overlay — controls auto-fade on idle, Esc exits. Main's Sound widget is back to plain type/palette/play controls; the fullscreen mode is now exclusive to Zen.\n"
+      "notes": "Zen Visualizer: fix overlay not showing. The body-level container now correctly covers the viewport (position:fixed inset:0). Added an always-visible × close button in the top-right corner so there's an obvious exit beyond Esc. Floating glass controls with the play button + type/palette dropdowns now show up the moment the overlay opens.\n"
     }
   }
 }
