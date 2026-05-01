@@ -2720,229 +2720,129 @@ button { cursor: pointer; }
 }
 .gpa-add:hover { background: var(--glass-border); }
 
-/* === Class Schedule === */
-.sched-widget .widget-label { display: flex; align-items: center; justify-content: space-between; }
-.sched-actions { display: flex; gap: 4px; }
-.sched-actions button {
-    background: var(--glass-bg-strong);
+/* === Photo Search === */
+.photos-widget .widget-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.photos-settings {
+    background: transparent;
     border: 1px solid var(--glass-border-soft);
     border-radius: 4px;
-    color: inherit;
-    width: 22px; height: 22px;
-    line-height: 1; padding: 0;
+    color: var(--text-dim);
+    width: 22px;
+    height: 22px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 11px;
+    line-height: 1;
+    padding: 0;
+    text-transform: none;
+    letter-spacing: 0;
 }
-.sched-actions button:hover { background: var(--glass-border); }
-.sched-grid {
-    flex: 1; min-height: 0;
-    overflow: auto;
+.photos-settings:hover { background: var(--glass-border); color: var(--text); }
+
+.photos-search { margin-bottom: 8px; flex-shrink: 0; }
+.photos-input {
+    width: 100%;
+    font-size: 13px !important;
+    padding: 7px 11px !important;
+}
+
+.photos-grid {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     display: grid;
-    gap: 3px;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 4px;
     align-content: start;
 }
-.sched-corner { background: transparent; }
-.sched-head {
-    font-size: 10px;
-    color: var(--text-faint);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    text-align: center;
-    padding: 3px 0;
-    font-weight: 600;
-}
-.sched-head.today {
-    color: var(--gold, #c9a36b);
-    background: rgba(201, 163, 107, 0.08);
-    border-radius: 4px;
-}
-.sched-period {
-    font-family: ui-monospace, "SF Mono", monospace;
-    font-size: 9px;
-    color: var(--text-faint);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    line-height: 1.3;
-}
-.sched-period-num { color: var(--text-dim); font-weight: 600; font-size: 10px; }
-.sched-period-time { font-size: 8.5px; opacity: 0.75; }
-.sched-cell {
+.photo-item {
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 6px;
     background: rgba(0, 0, 0, 0.18);
     border: 1px solid var(--glass-border-soft);
-    border-radius: 4px;
-    padding: 4px 5px;
-    display: flex; flex-direction: column; gap: 1px;
-    min-width: 0;
-    min-height: 38px;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    position: relative;
 }
-.sched-cell.current {
-    background: rgba(201, 163, 107, 0.16);
+.photo-item:hover {
+    transform: scale(1.04);
     border-color: var(--gold, #c9a36b);
     box-shadow: 0 0 0 1px var(--gold, #c9a36b);
+    z-index: 1;
 }
-.sched-cell input {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    color: var(--text) !important;
-    font-size: 10.5px !important;
-    line-height: 1.2;
-    font-family: inherit !important;
-    min-width: 0;
+.photo-item.copied {
+    box-shadow: 0 0 0 2px #34c759;
 }
-.sched-cell input:focus {
-    outline: none !important;
-    box-shadow: none !important;
-}
-.sched-cell-name { font-weight: 500; }
-.sched-cell-room {
-    font-size: 9.5px !important;
-    color: var(--text-faint) !important;
-    font-family: ui-monospace, "SF Mono", monospace !important;
-}
-.sched-cell.current .sched-cell-name { color: var(--gold, #c9a36b) !important; font-weight: 600; }
-
-/* === Grade Tracker === */
-.grades-widget .widget-label { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.grades-overall { text-transform: none; letter-spacing: 0; font-size: 11px; }
-.grades-overall-val {
-    font-family: ui-monospace, "SF Mono", monospace;
-    font-variant-numeric: tabular-nums;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 600;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--glass-border-soft);
-}
-.grades-list {
-    flex: 1; min-height: 0;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-.grade-row {
-    background: rgba(0, 0, 0, 0.16);
-    border: 1px solid var(--glass-border-soft);
-    border-radius: 6px;
-    overflow: hidden;
-}
-.grade-row[open] { background: rgba(0, 0, 0, 0.22); }
-.grade-head {
+.photo-item.copied::after {
+    content: 'Copied';
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
-    cursor: pointer;
-    list-style: none;
-    user-select: none;
-}
-.grade-head::-webkit-details-marker { display: none; }
-.grade-head::marker { content: ''; }
-.grade-name {
-    flex: 1;
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    color: var(--text) !important;
-    font-size: 13px !important;
-    font-weight: 500;
-}
-.grade-name:focus { outline: none !important; box-shadow: none !important; }
-.grade-score {
-    font-family: ui-monospace, "SF Mono", monospace;
-    font-variant-numeric: tabular-nums;
-    font-size: 12px;
-    color: var(--text-dim);
-    min-width: 48px;
-    text-align: right;
-}
-.grade-letter {
-    font-family: ui-monospace, "SF Mono", monospace;
-    font-size: 12px;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     font-weight: 600;
-    color: var(--text-dim);
-    min-width: 24px;
+    border-radius: 5px;
+}
+.photo-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.photos-status {
+    grid-column: 1 / -1;
     text-align: center;
-}
-.grade-score.good, .grade-letter.good, .grades-overall-val.good { color: #34c759; }
-.grade-score.ok,   .grade-letter.ok,   .grades-overall-val.ok   { color: var(--gold, #c9a36b); }
-.grade-score.warn, .grade-letter.warn, .grades-overall-val.warn { color: #ff9f0a; }
-.grade-score.bad,  .grade-letter.bad,  .grades-overall-val.bad  { color: #ff453a; }
-.grade-del {
-    background: transparent;
-    border: none;
     color: var(--text-faint);
-    width: 20px; height: 20px;
-    padding: 0;
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1;
-    border-radius: 4px;
-}
-.grade-del:hover { color: var(--text); background: var(--glass-border); }
-.grade-detail {
-    padding: 4px 10px 8px;
-    border-top: 1px solid var(--glass-border-soft);
-}
-.grade-items {
-    display: flex; flex-direction: column;
-    gap: 3px;
-    margin-bottom: 6px;
-}
-.grade-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11.5px;
-}
-.grade-item-name {
-    flex: 1;
-    color: var(--text);
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.grade-item-score {
-    font-family: ui-monospace, "SF Mono", monospace;
-    font-variant-numeric: tabular-nums;
-    color: var(--text-dim);
-    font-size: 11px;
-}
-.grade-item-del {
-    background: transparent;
-    border: none;
-    color: var(--text-faint);
-    cursor: pointer;
-    padding: 0 4px;
     font-size: 12px;
-    line-height: 1;
+    padding: 24px 8px;
 }
-.grade-item-del:hover { color: var(--text); }
-.grade-add-grade {
-    background: transparent;
-    border: 1px dashed var(--glass-border-soft);
-    border-radius: 4px;
+.photos-error { color: #ff453a; }
+
+.photos-setup {
+    flex: 1;
+    padding: 12px 6px;
+    font-size: 12.5px;
     color: var(--text-dim);
-    font-size: 11px;
-    padding: 4px 8px;
+    line-height: 1.6;
+    overflow-y: auto;
+}
+.photos-setup p { margin: 0 0 8px; }
+.photos-setup ol { margin: 0 0 12px; padding-left: 18px; }
+.photos-setup li { margin-bottom: 4px; }
+.photos-setup a {
+    color: var(--gold, #c9a36b);
+    text-decoration: underline;
+    text-decoration-color: rgba(201, 163, 107, 0.4);
+}
+.photos-setup a:hover { text-decoration-color: var(--gold, #c9a36b); }
+.photos-key {
+    width: 100%;
+    margin-bottom: 8px;
+    font-size: 12px !important;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace !important;
+}
+.photos-save-key {
+    background: rgba(72, 137, 240, 0.65);
+    border: 1px solid rgba(72, 137, 240, 0.4);
+    color: #fff;
+    border-radius: 7px;
+    padding: 7px 14px;
     cursor: pointer;
+    font-size: 13px;
     width: 100%;
     font-family: inherit;
+    font-weight: 500;
 }
-.grade-add-grade:hover { color: var(--text); border-color: var(--glass-border); }
-.grades-add {
-    background: var(--glass-bg-strong);
-    border: 1px solid var(--glass-border-soft);
-    border-radius: 5px;
-    color: inherit;
-    padding: 6px 10px;
-    cursor: pointer;
-    font-size: 12px;
-    flex-shrink: 0;
-    margin-top: 6px;
-    font-family: inherit;
-}
-.grades-add:hover { background: var(--glass-border); }
+.photos-save-key:hover { background: rgba(72, 137, 240, 0.85); }
 
 /* === Status widget === */
 .status-widget { justify-content: space-between; gap: 18px; }

@@ -2050,302 +2050,141 @@ const WIDGET_LIBRARY = {
             return () => container.classList.remove('gpa-widget');
         },
     },
-    schedule: {
-        id: 'schedule', name: 'Class Schedule', icon: '📅', category: 'Productivity',
+    photos: {
+        id: 'photos', name: 'Photo Search', icon: '🖼', category: 'Productivity',
         sizes: ['small', 'tall', 'wide'],
         render(container) {
-            container.classList.add('sched-widget');
+            container.classList.add('photos-widget');
             container.innerHTML = `
                 <div class="widget-label">
-                    <span>Schedule</span>
-                    <div class="sched-actions">
-                        <button class="sched-period-minus" title="Remove period">−</button>
-                        <button class="sched-period-plus" title="Add period">+</button>
-                    </div>
+                    <span>Photo Search</span>
+                    <button class="photos-settings" title="API key settings">⚙</button>
                 </div>
-                <div class="sched-grid"></div>`;
-            const grid = container.querySelector('.sched-grid');
-            const minusBtn = container.querySelector('.sched-period-minus');
-            const plusBtn = container.querySelector('.sched-period-plus');
+                <form class="photos-search">
+                    <input type="text" class="photos-input" placeholder="Search photos…" spellcheck="false">
+                </form>
+                <div class="photos-grid"></div>
+                <div class="photos-setup">
+                    <p>Free Pixabay API key needed (one-time, ~30 seconds):</p>
+                    <ol>
+                        <li>Sign in at <a href="https://pixabay.com/accounts/register/" target="_blank" rel="noopener">pixabay.com</a></li>
+                        <li>Copy the key shown on the <a href="https://pixabay.com/api/docs/" target="_blank" rel="noopener">API docs page</a></li>
+                        <li>Paste it below — saved locally, never sent anywhere else.</li>
+                    </ol>
+                    <input type="text" class="photos-key" placeholder="Paste your Pixabay key" spellcheck="false">
+                    <button type="button" class="photos-save-key">Save key</button>
+                </div>`;
+            const settingsBtn = container.querySelector('.photos-settings');
+            const searchForm  = container.querySelector('.photos-search');
+            const searchInput = container.querySelector('.photos-input');
+            const grid        = container.querySelector('.photos-grid');
+            const setup       = container.querySelector('.photos-setup');
+            const keyInput    = container.querySelector('.photos-key');
+            const saveKeyBtn  = container.querySelector('.photos-save-key');
 
-            const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-            // Default 7-period times (8:00, 8:55, 9:50, 10:45, 11:40, 12:35, 13:30 → +50min each)
-            function periodTimes(p) {
-                const startMin = 480 + p * 55; // 8:00 AM = 480
-                const endMin = startMin + 50;
-                const fmt = (m) => {
-                    const h12 = ((Math.floor(m / 60) + 11) % 12) + 1;
-                    const min = String(m % 60).padStart(2, '0');
-                    const ampm = m >= 720 ? 'PM' : 'AM';
-                    return `${h12}:${min} ${ampm}`;
-                };
-                return { start: startMin, end: endMin, label: `${fmt(startMin)}–${fmt(endMin)}` };
-            }
+            let apiKey = null;
 
-            let state = null;
-            let liveTimer = null;
-
-            async function load() {
-                const stored = await getStored('vipertab.schedule', null);
-                if (stored && Array.isArray(stored.grid) && stored.grid.length === DAYS.length) {
-                    state = stored;
-                } else {
-                    state = {
-                        periods: 7,
-                        grid: DAYS.map(() => Array(7).fill(null).map(() => ({ name: '', room: '' }))),
-                    };
-                }
-                render();
-            }
-
-            function currentSlot() {
-                const now = new Date();
-                const day = now.getDay() - 1;
-                if (day < 0 || day > 4) return { day: -1, period: -1 };
-                const t = now.getHours() * 60 + now.getMinutes();
-                for (let p = 0; p < state.periods; p++) {
-                    const { start, end } = periodTimes(p);
-                    if (t >= start && t <= end) return { day, period: p };
-                }
-                return { day, period: -1 };
-            }
-
-            function save() { setStored('vipertab.schedule', state); }
-
-            function makeCell(name, room, dayIdx, periodIdx) {
-                const cell = document.createElement('div');
-                cell.className = 'sched-cell';
-                const nameEl = document.createElement('input');
-                nameEl.className = 'sched-cell-name';
-                nameEl.value = name || '';
-                nameEl.placeholder = '—';
-                nameEl.spellcheck = false;
-                nameEl.addEventListener('change', () => {
-                    state.grid[dayIdx][periodIdx].name = nameEl.value;
-                    save();
-                });
-                const roomEl = document.createElement('input');
-                roomEl.className = 'sched-cell-room';
-                roomEl.value = room || '';
-                roomEl.placeholder = 'rm';
-                roomEl.spellcheck = false;
-                roomEl.addEventListener('change', () => {
-                    state.grid[dayIdx][periodIdx].room = roomEl.value;
-                    save();
-                });
-                cell.append(nameEl, roomEl);
-                return cell;
-            }
-
-            function render() {
-                grid.innerHTML = '';
-                grid.style.gridTemplateColumns = `60px repeat(${DAYS.length}, 1fr)`;
-                const { day: cDay, period: cPer } = currentSlot();
-
-                // Header row: blank corner + day labels
-                const corner = document.createElement('div');
-                corner.className = 'sched-corner';
-                grid.appendChild(corner);
-                DAYS.forEach((d, i) => {
-                    const h = document.createElement('div');
-                    h.className = 'sched-head';
-                    if (i === cDay) h.classList.add('today');
-                    h.textContent = d;
-                    grid.appendChild(h);
-                });
-
-                for (let p = 0; p < state.periods; p++) {
-                    const t = periodTimes(p);
-                    const periodHead = document.createElement('div');
-                    periodHead.className = 'sched-period';
-                    periodHead.innerHTML = `<span class="sched-period-num">P${p + 1}</span><span class="sched-period-time">${t.label}</span>`;
-                    grid.appendChild(periodHead);
-                    DAYS.forEach((_, dIdx) => {
-                        const c = state.grid[dIdx]?.[p] || { name: '', room: '' };
-                        const cell = makeCell(c.name, c.room, dIdx, p);
-                        if (dIdx === cDay && p === cPer) cell.classList.add('current');
-                        grid.appendChild(cell);
-                    });
-                }
-            }
-
-            plusBtn.addEventListener('click', () => {
-                if (state.periods >= 10) return;
-                state.periods++;
-                state.grid.forEach(d => d.push({ name: '', room: '' }));
-                save(); render();
-            });
-            minusBtn.addEventListener('click', () => {
-                if (state.periods <= 1) return;
-                state.periods--;
-                state.grid.forEach(d => d.pop());
-                save(); render();
-            });
-
-            load();
-            // Re-render once a minute so the "current period" highlight stays accurate.
-            liveTimer = setInterval(() => { if (state) render(); }, 60000);
-            return () => {
-                if (liveTimer) clearInterval(liveTimer);
-                container.classList.remove('sched-widget');
+            const showSearch = () => {
+                searchForm.style.display = '';
+                grid.style.display = '';
+                setup.style.display = 'none';
             };
-        },
-    },
-    grades: {
-        id: 'grades', name: 'Grade Tracker', icon: '📊', category: 'Productivity',
-        sizes: ['small', 'tall'],
-        render(container) {
-            container.classList.add('grades-widget');
-            container.innerHTML = `
-                <div class="widget-label">
-                    <span>Grades</span>
-                    <div class="grades-overall"></div>
-                </div>
-                <div class="grades-list"></div>
-                <button class="grades-add">+ Add class</button>`;
-            const list = container.querySelector('.grades-list');
-            const overall = container.querySelector('.grades-overall');
-            const addBtn = container.querySelector('.grades-add');
-
-            let classes = [];
+            const showSetup = () => {
+                searchForm.style.display = 'none';
+                grid.style.display = 'none';
+                setup.style.display = '';
+            };
 
             async function load() {
-                classes = await getStored('vipertab.grades', []);
-                render();
-            }
-            function save() { setStored('vipertab.grades', classes); }
-
-            function classAvg(c) {
-                if (!c.grades || !c.grades.length) return null;
-                let total = 0, weight = 0;
-                c.grades.forEach(g => {
-                    const max = parseFloat(g.max) || 100;
-                    const score = parseFloat(g.score);
-                    if (!isFinite(score) || max <= 0) return;
-                    total += (score / max) * 100;
-                    weight += 1;
-                });
-                return weight ? total / weight : null;
-            }
-            function letterFor(avg) {
-                if (avg == null) return '—';
-                if (avg >= 93) return 'A';     if (avg >= 90) return 'A−';
-                if (avg >= 87) return 'B+';    if (avg >= 83) return 'B';     if (avg >= 80) return 'B−';
-                if (avg >= 77) return 'C+';    if (avg >= 73) return 'C';     if (avg >= 70) return 'C−';
-                if (avg >= 67) return 'D+';    if (avg >= 63) return 'D';     if (avg >= 60) return 'D−';
-                return 'F';
-            }
-            function gradeTone(avg) {
-                if (avg == null) return '';
-                if (avg >= 90) return 'good';
-                if (avg >= 80) return 'ok';
-                if (avg >= 70) return 'warn';
-                return 'bad';
+                apiKey = await getStored('vipertab.pixabayKey', null);
+                if (apiKey) showSearch(); else showSetup();
             }
 
-            function render() {
-                list.innerHTML = '';
-                classes.forEach((c, ci) => {
-                    const row = document.createElement('details');
-                    row.className = 'grade-row';
-
-                    const head = document.createElement('summary');
-                    head.className = 'grade-head';
-
-                    const name = document.createElement('input');
-                    name.value = c.name || '';
-                    name.placeholder = 'Class name';
-                    name.className = 'grade-name';
-                    name.spellcheck = false;
-                    name.addEventListener('click', e => e.stopPropagation()); // don't toggle details
-                    name.addEventListener('change', () => { c.name = name.value; save(); });
-
-                    const avg = classAvg(c);
-                    const score = document.createElement('span');
-                    score.className = 'grade-score ' + gradeTone(avg);
-                    score.textContent = avg != null ? `${avg.toFixed(1)}%` : '—';
-
-                    const letter = document.createElement('span');
-                    letter.className = 'grade-letter ' + gradeTone(avg);
-                    letter.textContent = letterFor(avg);
-
-                    const del = document.createElement('button');
-                    del.className = 'grade-del';
-                    del.textContent = '×';
-                    del.title = 'Remove class';
-                    del.addEventListener('click', (e) => {
-                        e.preventDefault(); e.stopPropagation();
-                        classes.splice(ci, 1); save(); render();
-                    });
-
-                    head.append(name, score, letter, del);
-                    row.append(head);
-
-                    const detail = document.createElement('div');
-                    detail.className = 'grade-detail';
-
-                    const items = document.createElement('div');
-                    items.className = 'grade-items';
-                    (c.grades || []).forEach((g, gi) => {
-                        const gRow = document.createElement('div');
-                        gRow.className = 'grade-item';
-                        const gName = document.createElement('span');
-                        gName.className = 'grade-item-name';
-                        gName.textContent = g.name || 'Assignment';
-                        const gScore = document.createElement('span');
-                        gScore.className = 'grade-item-score';
-                        gScore.textContent = `${g.score}/${g.max || 100}`;
-                        const gDel = document.createElement('button');
-                        gDel.className = 'grade-item-del';
-                        gDel.textContent = '×';
-                        gDel.addEventListener('click', () => {
-                            c.grades.splice(gi, 1); save(); render();
+            async function search(query) {
+                if (!apiKey) return;
+                grid.innerHTML = '<div class="photos-status">Searching…</div>';
+                try {
+                    const url = `https://pixabay.com/api/?key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(query)}&image_type=photo&safesearch=true&per_page=24`;
+                    const r = await fetch(url);
+                    if (!r.ok) {
+                        if (r.status === 400) throw new Error('Invalid API key. Replace it via ⚙.');
+                        if (r.status === 429) throw new Error('Rate limit reached — wait a minute.');
+                        throw new Error('API error ' + r.status);
+                    }
+                    const d = await r.json();
+                    grid.innerHTML = '';
+                    if (!d.hits || d.hits.length === 0) {
+                        grid.innerHTML = '<div class="photos-status">No results</div>';
+                        return;
+                    }
+                    d.hits.forEach(hit => {
+                        const item = document.createElement('a');
+                        item.className = 'photo-item';
+                        item.href = hit.largeImageURL || hit.webformatURL;
+                        item.target = '_blank';
+                        item.rel = 'noopener noreferrer';
+                        item.title = `${hit.tags}\nClick: open full size · ${hit.user ? 'by ' + hit.user : ''}`;
+                        const img = document.createElement('img');
+                        img.src = hit.previewURL;
+                        img.alt = hit.tags || '';
+                        img.loading = 'lazy';
+                        img.referrerPolicy = 'no-referrer';
+                        item.appendChild(img);
+                        // Right-click → copy URL
+                        item.addEventListener('contextmenu', (e) => {
+                            e.preventDefault();
+                            navigator.clipboard?.writeText(hit.largeImageURL || hit.webformatURL);
+                            item.classList.add('copied');
+                            setTimeout(() => item.classList.remove('copied'), 600);
                         });
-                        gRow.append(gName, gScore, gDel);
-                        items.append(gRow);
+                        grid.appendChild(item);
                     });
-
-                    const addG = document.createElement('button');
-                    addG.className = 'grade-add-grade';
-                    addG.textContent = '+ Add assignment';
-                    addG.addEventListener('click', async () => {
-                        const name = window.prompt('Assignment name:');
-                        if (!name) return;
-                        const scoreStr = window.prompt('Score earned:');
-                        const score = parseFloat(scoreStr);
-                        if (!isFinite(score)) return;
-                        const maxStr = window.prompt('Out of (default 100):', '100');
-                        const max = parseFloat(maxStr) || 100;
-                        c.grades = c.grades || [];
-                        c.grades.push({ name: name.trim(), score, max });
-                        save(); render();
-                    });
-
-                    detail.append(items, addG);
-                    row.append(detail);
-                    list.append(row);
-                });
-
-                const allAvgs = classes.map(classAvg).filter(a => a != null);
-                if (allAvgs.length) {
-                    const overallAvg = allAvgs.reduce((s, a) => s + a, 0) / allAvgs.length;
-                    overall.innerHTML = '';
-                    const sp = document.createElement('span');
-                    sp.className = 'grades-overall-val ' + gradeTone(overallAvg);
-                    sp.textContent = `${overallAvg.toFixed(1)}% · ${letterFor(overallAvg)}`;
-                    overall.append(sp);
-                } else {
-                    overall.innerHTML = '';
+                } catch (e) {
+                    grid.innerHTML = '';
+                    const err = document.createElement('div');
+                    err.className = 'photos-status photos-error';
+                    err.textContent = e.message || 'Search failed';
+                    grid.appendChild(err);
                 }
             }
 
-            addBtn.addEventListener('click', () => {
-                classes.push({ name: '', grades: [] });
-                save(); render();
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const q = searchInput.value.trim();
+                if (q) search(q);
+            });
+
+            saveKeyBtn.addEventListener('click', async () => {
+                const k = keyInput.value.trim();
+                if (!k) return;
+                apiKey = k;
+                await setStored('vipertab.pixabayKey', k);
+                showSearch();
+                searchInput.focus();
+            });
+            keyInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); saveKeyBtn.click(); }
+            });
+
+            settingsBtn.addEventListener('click', async () => {
+                const masked = apiKey ? apiKey.slice(0, 4) + '…' + apiKey.slice(-4) : '(not set)';
+                const next = window.prompt(
+                    `Pixabay API key\nCurrent: ${masked}\n\nPaste a new key, type "remove" to clear, or Cancel to keep.`
+                );
+                if (next == null) return;
+                if (next.trim().toLowerCase() === 'remove') {
+                    apiKey = null;
+                    await setStored('vipertab.pixabayKey', null);
+                    showSetup();
+                } else if (next.trim()) {
+                    apiKey = next.trim();
+                    await setStored('vipertab.pixabayKey', apiKey);
+                    showSearch();
+                }
             });
 
             load();
-            return () => container.classList.remove('grades-widget');
+            return () => container.classList.remove('photos-widget');
         },
     },
 
@@ -2630,7 +2469,7 @@ const DEFAULT_LAYOUT_DEV = {
 };
 const DEFAULT_LAYOUT_STUDENT = {
     slot1: 'schoollinks', slot2: 'duedates', slot3: 'pomodoro', slot4: 'notebook',
-    slot5: 'todo', slot6: 'gpa', slot7: 'grades', slot8: 'schedule',
+    slot5: 'todo', slot6: 'gpa', slot7: 'quote', slot8: 'photos',
 };
 
 // Widget pools per edition — strictly enforced. Widgets not in the current
@@ -2647,7 +2486,7 @@ const WIDGET_EDITIONS = {
     recent:      ['main', 'zen'],
     visualizer:  ['main', 'zen'],
     crypto:      ['main', 'zen'],
-    quote:       ['main', 'zen'],
+    quote:       ['main', 'student', 'zen'],
     apod:        ['main', 'zen'],
     stopwatch:   ['main', 'zen'],
     dice:        ['main', 'zen'],
@@ -2672,8 +2511,7 @@ const WIDGET_EDITIONS = {
     schoollinks: ['student'],
     duedates:    ['student'],
     gpa:         ['student'],
-    schedule:    ['student'],
-    grades:      ['student'],
+    photos:      ['student'],
 };
 
 function isWidgetAllowedInEdition(widgetId, edition) {
