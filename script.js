@@ -3347,6 +3347,14 @@ function initZenVisualizer() {
         document.body.appendChild(overlay);
         document.body.classList.add('viz-stage-mode');
         cleanupWidget = WIDGET_LIBRARY.visualizer.render(overlay, 'wide');
+        // Always-visible close button so the user has an obvious exit
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'viz-stage-close';
+        closeBtn.title = 'Exit Zen Visualizer (Esc)';
+        closeBtn.textContent = '×';
+        closeBtn.addEventListener('click', close);
+        document.body.appendChild(closeBtn);
+        overlay._closeBtn = closeBtn;
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('keydown', onKey);
         onMouseMove();
@@ -3355,6 +3363,7 @@ function initZenVisualizer() {
         if (!overlay) return;
         try { cleanupWidget && cleanupWidget(); } catch {}
         cleanupWidget = null;
+        if (overlay._closeBtn) overlay._closeBtn.remove();
         overlay.remove();
         overlay = null;
         document.body.classList.remove('viz-stage-mode', 'viz-stage-idle');
