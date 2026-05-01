@@ -50,6 +50,8 @@ const PREFS = {
                : 'sequoia',
     vizType: 'bars',
     vizPalette: IS_DEV_EDITION ? 'mono' : 'aurora',
+    vizGain: 1,
+    vizSmoothing: 0.78,
     zenAccent: '#c9a36b',  // gold by default; user-customizable in zen edition
     clockStyle: 'digital', // 'digital' | 'analog' — applies to all clock widgets
 };
@@ -962,24 +964,45 @@ const WIDGET_LIBRARY = {
                 <div class="widget-label">
                     <span>Sound</span>
                     <div class="viz-controls">
-                        <select class="viz-select viz-type" title="Style">
-                            <option value="bars">Bars</option>
-                            <option value="mirror">Mirror</option>
-                            <option value="wave">Wave</option>
-                            <option value="circle">Circle</option>
-                        </select>
-                        <select class="viz-select viz-palette" title="Palette">
-                            <option value="smart">Smart (from tab)</option>
-                            <option value="aurora">Aurora</option>
-                            <option value="ocean">Ocean</option>
-                            <option value="fire">Fire</option>
-                            <option value="forest">Forest</option>
-                            <option value="rainbow">Rainbow</option>
-                            <option value="mono">Mono</option>
-                        </select>
+                        <button class="viz-btn viz-settings-btn" title="Visualizer settings" aria-label="Settings">
+                            <svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="currentColor" d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm9.4 4l1.5-1.2-1.5-2.6-1.9.5a8 8 0 0 0-1.5-.9l-.4-1.9h-3l-.4 1.9c-.5.2-1 .5-1.5.9l-1.9-.5-1.5 2.6L9.6 12l-1.5 1.2 1.5 2.6 1.9-.5c.5.4 1 .7 1.5.9l.4 1.9h3l.4-1.9c.5-.2 1-.5 1.5-.9l1.9.5 1.5-2.6L21.4 12z"/>
+                            </svg>
+                        </button>
                         <button class="viz-btn viz-toggle" title="Capture audio">
                             <svg class="viz-icon" width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
                         </button>
+                        <div class="viz-settings-panel" hidden>
+                            <div class="viz-set-row">
+                                <label>Style</label>
+                                <div class="viz-seg" data-key="vizType">
+                                    <button data-val="bars">Bars</button>
+                                    <button data-val="mirror">Mirror</button>
+                                    <button data-val="wave">Wave</button>
+                                    <button data-val="circle">Circle</button>
+                                </div>
+                            </div>
+                            <div class="viz-set-row">
+                                <label>Palette</label>
+                                <div class="viz-seg viz-seg-grid" data-key="vizPalette">
+                                    <button data-val="smart">Smart</button>
+                                    <button data-val="aurora">Aurora</button>
+                                    <button data-val="ocean">Ocean</button>
+                                    <button data-val="fire">Fire</button>
+                                    <button data-val="forest">Forest</button>
+                                    <button data-val="rainbow">Rainbow</button>
+                                    <button data-val="mono">Mono</button>
+                                </div>
+                            </div>
+                            <div class="viz-set-row">
+                                <div class="viz-set-head"><label>Sensitivity</label><span class="viz-set-val" data-show="vizGain">1.0×</span></div>
+                                <input type="range" min="0.5" max="3" step="0.1" data-key="vizGain">
+                            </div>
+                            <div class="viz-set-row">
+                                <div class="viz-set-head"><label>Smoothing</label><span class="viz-set-val" data-show="vizSmoothing">0.78</span></div>
+                                <input type="range" min="0" max="0.95" step="0.05" data-key="vizSmoothing">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <canvas class="viz-canvas"></canvas>
@@ -987,8 +1010,8 @@ const WIDGET_LIBRARY = {
             const canvas = container.querySelector('.viz-canvas');
             const status = container.querySelector('.viz-status');
             const btn = container.querySelector('.viz-toggle');
-            const typeSel = container.querySelector('.viz-type');
-            const palSel = container.querySelector('.viz-palette');
+            const gear = container.querySelector('.viz-settings-btn');
+            const panel = container.querySelector('.viz-settings-panel');
             const iconPath = container.querySelector('.viz-icon path');
             const ctx = canvas.getContext('2d');
             const PLAY = 'M8 5v14l11-7z';
@@ -996,8 +1019,49 @@ const WIDGET_LIBRARY = {
             let audioCtx = null, analyser = null, source = null, stream = null, raf = null;
             let running = false, freqData = null, timeData = null;
             let smartTimer = null;
-            typeSel.value = PREFS.vizType;
-            palSel.value = PREFS.vizPalette;
+            const fmtVal = {
+                vizGain: v => Number(v).toFixed(1) + '×',
+                vizSmoothing: v => Number(v).toFixed(2),
+            };
+            function syncSeg(seg) {
+                const k = seg.dataset.key;
+                seg.querySelectorAll('button').forEach(b => {
+                    b.classList.toggle('active', b.dataset.val === PREFS[k]);
+                });
+            }
+            panel.querySelectorAll('.viz-seg').forEach(seg => {
+                syncSeg(seg);
+                seg.addEventListener('click', async e => {
+                    const b = e.target.closest('button[data-val]');
+                    if (!b) return;
+                    PREFS[seg.dataset.key] = b.dataset.val;
+                    syncSeg(seg);
+                    await setStored('vipertab.prefs', PREFS);
+                });
+            });
+            panel.querySelectorAll('input[type=range]').forEach(slider => {
+                const key = slider.dataset.key;
+                slider.value = PREFS[key];
+                const valEl = panel.querySelector(`[data-show="${key}"]`);
+                if (valEl) valEl.textContent = fmtVal[key](slider.value);
+                slider.addEventListener('input', async () => {
+                    PREFS[key] = parseFloat(slider.value);
+                    if (valEl) valEl.textContent = fmtVal[key](slider.value);
+                    if (key === 'vizSmoothing' && analyser) analyser.smoothingTimeConstant = PREFS.vizSmoothing;
+                    await setStored('vipertab.prefs', PREFS);
+                });
+            });
+            const onDocClick = e => {
+                if (panel.hidden) return;
+                if (!container.contains(e.target)) panel.hidden = true;
+            };
+            gear.addEventListener('click', e => {
+                e.stopPropagation();
+                panel.hidden = !panel.hidden;
+                gear.classList.toggle('active', !panel.hidden);
+            });
+            panel.addEventListener('click', e => e.stopPropagation());
+            document.addEventListener('click', onDocClick);
             const ro = new ResizeObserver(() => {
                 const dpr = window.devicePixelRatio || 1;
                 const r = canvas.getBoundingClientRect();
@@ -1032,7 +1096,7 @@ const WIDGET_LIBRARY = {
                 source = audioCtx.createMediaStreamSource(new MediaStream(audioTracks));
                 analyser = audioCtx.createAnalyser();
                 analyser.fftSize = 1024;
-                analyser.smoothingTimeConstant = 0.78;
+                analyser.smoothingTimeConstant = PREFS.vizSmoothing;
                 source.connect(analyser);
                 freqData = new Uint8Array(analyser.frequencyBinCount);
                 timeData = new Uint8Array(analyser.fftSize);
@@ -1080,18 +1144,17 @@ const WIDGET_LIBRARY = {
                 const W = r.width, H = r.height;
                 ctx.clearRect(0, 0, W, H);
                 const fn = { bars: drawBars, mirror: drawMirror, wave: drawWave, circle: drawCircle }[PREFS.vizType] || drawBars;
-                fn(ctx, PREFS.vizType === 'wave' ? timeData : freqData, W, H, PREFS.vizPalette);
+                fn(ctx, PREFS.vizType === 'wave' ? timeData : freqData, W, H, PREFS.vizPalette, PREFS.vizGain);
                 raf = requestAnimationFrame(draw);
             };
             btn.addEventListener('click', () => running ? stop() : start());
-            typeSel.addEventListener('change', async () => { PREFS.vizType = typeSel.value; await setStored('vipertab.prefs', PREFS); });
-            palSel.addEventListener('change', async () => { PREFS.vizPalette = palSel.value; await setStored('vipertab.prefs', PREFS); });
             const offToggle = events.on('visualizer-toggle', () => running ? stop() : start());
 
             return () => {
                 stop();
                 ro.disconnect();
                 offToggle();
+                document.removeEventListener('click', onDocClick);
                 container.classList.remove('visualizer-widget');
             };
         },
@@ -2379,13 +2442,13 @@ const paletteColor = (name, i, n, alpha) => {
     const [h, s, l] = (PALETTES[name] || PALETTES.aurora)(i, n);
     return `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
 };
-function drawBars(ctx, freq, W, H, palette) {
+function drawBars(ctx, freq, W, H, palette, gain = 1) {
     const BARS = 64, usable = Math.floor(freq.length * 0.7);
     const step = Math.max(1, Math.floor(usable / BARS));
     const slot = W / BARS, gap = 2, barW = Math.max(1, slot - gap);
     const radius = Math.min(barW / 2, 5);
     for (let i = 0; i < BARS; i++) {
-        const v = Math.pow(freq[i * step] / 255, 1.4);
+        const v = Math.min(1, Math.pow(freq[i * step] / 255, 1.4) * gain);
         const h = Math.max(2, v * H * 0.95);
         const x = i * slot + gap / 2, y = H - h;
         const grad = ctx.createLinearGradient(0, y, 0, H);
@@ -2401,13 +2464,13 @@ function drawBars(ctx, freq, W, H, palette) {
         ctx.closePath(); ctx.fill();
     }
 }
-function drawMirror(ctx, freq, W, H, palette) {
+function drawMirror(ctx, freq, W, H, palette, gain = 1) {
     const BARS = 64, cy = H / 2, usable = Math.floor(freq.length * 0.7);
     const step = Math.max(1, Math.floor(usable / BARS));
     const slot = W / BARS, gap = 2, barW = Math.max(1, slot - gap);
     const radius = Math.min(barW / 2, 5);
     for (let i = 0; i < BARS; i++) {
-        const v = Math.pow(freq[i * step] / 255, 1.3);
+        const v = Math.min(1, Math.pow(freq[i * step] / 255, 1.3) * gain);
         const h = Math.max(1, v * H * 0.45);
         const x = i * slot + gap / 2, y = cy - h;
         const grad = ctx.createLinearGradient(0, y, 0, cy + h);
@@ -2428,7 +2491,7 @@ function drawMirror(ctx, freq, W, H, palette) {
         ctx.lineTo(x + barW, cy); ctx.closePath(); ctx.fill();
     }
 }
-function drawWave(ctx, time, W, H, palette) {
+function drawWave(ctx, time, W, H, palette, gain = 1) {
     const N = time.length;
     ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     const grad = ctx.createLinearGradient(0, 0, W, 0);
@@ -2441,13 +2504,13 @@ function drawWave(ctx, time, W, H, palette) {
     ctx.beginPath();
     const slice = W / N;
     for (let i = 0; i < N; i++) {
-        const v = (time[i] - 128) / 128;
+        const v = Math.max(-1, Math.min(1, ((time[i] - 128) / 128) * gain));
         const x = i * slice, y = H / 2 + v * H / 2 * 0.85;
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     ctx.stroke(); ctx.shadowBlur = 0;
 }
-function drawCircle(ctx, freq, W, H, palette) {
+function drawCircle(ctx, freq, W, H, palette, gain = 1) {
     const cx = W / 2, cy = H / 2;
     const baseR = Math.min(W, H) * 0.18;
     const maxLen = Math.min(W, H) * 0.32;
@@ -2455,7 +2518,7 @@ function drawCircle(ctx, freq, W, H, palette) {
     const step = Math.max(1, Math.floor(usable / BARS));
     ctx.lineCap = 'round';
     for (let i = 0; i < BARS; i++) {
-        const v = Math.pow(freq[i * step] / 255, 1.3);
+        const v = Math.min(1, Math.pow(freq[i * step] / 255, 1.3) * gain);
         const len = Math.max(2, v * maxLen);
         const a = (i / BARS) * Math.PI * 2 - Math.PI / 2;
         const x1 = cx + Math.cos(a) * baseR, y1 = cy + Math.sin(a) * baseR;
