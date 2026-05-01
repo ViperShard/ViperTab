@@ -1,27 +1,27 @@
 {
-  "version": "1.4.9",
+  "version": "1.4.10",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Zen: analog clock no longer overflows slot 4. Fixed flex sizing so the SVG fits within its grid area on any screen size — date stays clean below the face, weather + location in slot 7 are no longer covered.\n",
+  "notes": "Weather: bypass browser geolocation. Now uses IP-based lookup via ipapi.co — no permission prompt, weather appears immediately on new tab. Hardcoded NYC fallback if the IP service is unavailable. Single round-trip instead of two (location + reverse-geocode merged).\n",
   "editions": {
     "main": {
-      "version": "1.4.9",
+      "version": "1.4.10",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Zen: analog clock no longer overflows slot 4. Fixed flex sizing so the SVG fits within its grid area on any screen size — date stays clean below the face, weather + location in slot 7 are no longer covered.\n"
+      "notes": "Weather: bypass browser geolocation. Now uses IP-based lookup via ipapi.co — no permission prompt, weather appears immediately on new tab. Hardcoded NYC fallback if the IP service is unavailable. Single round-trip instead of two (location + reverse-geocode merged).\n"
     },
     "dev": {
       "version": "1.4.9",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Zen: analog clock no longer overflows slot 4. Fixed flex sizing so the SVG fits within its grid area on any screen size — date stays clean below the face, weather + location in slot 7 are no longer covered.\n"
+      "notes": "Weather: bypass browser geolocation. Now uses IP-based lookup via ipapi.co — no permission prompt, weather appears immediately on new tab. Hardcoded NYC fallback if the IP service is unavailable. Single round-trip instead of two (location + reverse-geocode merged).\n"
     },
     "student": {
       "version": "1.0.8",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip",
-      "notes": "Zen: analog clock no longer overflows slot 4. Fixed flex sizing so the SVG fits within its grid area on any screen size — date stays clean below the face, weather + location in slot 7 are no longer covered.\n"
+      "notes": "Weather: bypass browser geolocation. Now uses IP-based lookup via ipapi.co — no permission prompt, weather appears immediately on new tab. Hardcoded NYC fallback if the IP service is unavailable. Single round-trip instead of two (location + reverse-geocode merged).\n"
     },
     "zen": {
-      "version": "1.0.9",
+      "version": "1.0.10",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip",
-      "notes": "Zen: analog clock no longer overflows slot 4. Fixed flex sizing so the SVG fits within its grid area on any screen size — date stays clean below the face, weather + location in slot 7 are no longer covered.\n"
+      "notes": "Weather: bypass browser geolocation. Now uses IP-based lookup via ipapi.co — no permission prompt, weather appears immediately on new tab. Hardcoded NYC fallback if the IP service is unavailable. Single round-trip instead of two (location + reverse-geocode merged).\n"
     }
   }
 }
