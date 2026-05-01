@@ -977,11 +977,6 @@ const WIDGET_LIBRARY = {
                             <option value="rainbow">Rainbow</option>
                             <option value="mono">Mono</option>
                         </select>
-                        <button class="viz-btn viz-stage" title="Zen mode — full screen (Esc to exit)">
-                            <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
-                                <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 9V5h4M19 9V5h-4M5 15v4h4M19 15v4h-4"/>
-                            </svg>
-                        </button>
                         <button class="viz-btn viz-toggle" title="Capture audio">
                             <svg class="viz-icon" width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
                         </button>
@@ -1084,44 +1079,10 @@ const WIDGET_LIBRARY = {
             palSel.addEventListener('change', async () => { PREFS.vizPalette = palSel.value; await setStored('vipertab.prefs', PREFS); });
             const offToggle = events.on('visualizer-toggle', () => running ? stop() : start());
 
-            // Zen mode (full-screen takeover) — toggle with stage button or Esc.
-            const stageBtn = container.querySelector('.viz-stage');
-            let stageActive = false;
-            let idleTimer = null;
-            function enterStage() {
-                stageActive = true;
-                document.body.classList.add('viz-stage-mode');
-                container.classList.add('viz-stage-active');
-                scheduleIdle();
-                // Force canvas resize next frame (its bounding rect just changed massively)
-                requestAnimationFrame(() => { try { ro.observe(canvas); } catch {} });
-            }
-            function exitStage() {
-                stageActive = false;
-                document.body.classList.remove('viz-stage-mode', 'viz-stage-idle');
-                container.classList.remove('viz-stage-active');
-                if (idleTimer) clearTimeout(idleTimer);
-            }
-            function scheduleIdle() {
-                if (idleTimer) clearTimeout(idleTimer);
-                document.body.classList.remove('viz-stage-idle');
-                idleTimer = setTimeout(() => {
-                    if (stageActive) document.body.classList.add('viz-stage-idle');
-                }, 2000);
-            }
-            const onMouseMove = () => { if (stageActive) scheduleIdle(); };
-            const onKeyDown = (e) => { if (e.key === 'Escape' && stageActive) exitStage(); };
-            stageBtn?.addEventListener('click', () => stageActive ? exitStage() : enterStage());
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('keydown', onKeyDown);
-
             return () => {
                 stop();
                 ro.disconnect();
                 offToggle();
-                if (stageActive) exitStage();
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('keydown', onKeyDown);
                 container.classList.remove('visualizer-widget');
             };
         },
@@ -3329,6 +3290,7 @@ async function boot() {
     if (IS_ZEN_EDITION) initZenChrome();
     if (IS_ZEN_EDITION) applyZenAccent(PREFS.zenAccent);
     if (IS_ZEN_EDITION) initFullscreenButton();
+    if (IS_ZEN_EDITION) initZenVisualizer();
 
     checkForUpdates();
 }
@@ -3356,6 +3318,51 @@ function initZenChrome() {
 function applyZenAccent(color) {
     if (!color) return;
     document.documentElement.style.setProperty('--zen-accent', color);
+}
+
+// Zen Visualizer mode — opens the visualizer widget into a fullscreen overlay
+// that takes over the new tab. Floating glass controls fade out on idle, Esc exits.
+function initZenVisualizer() {
+    const btn = $('zen-viz-btn');
+    if (!btn) return;
+    let overlay = null;
+    let cleanupWidget = null;
+    let idleTimer = null;
+    function onMouseMove() {
+        if (!overlay) return;
+        document.body.classList.remove('viz-stage-idle');
+        if (idleTimer) clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+            if (overlay) document.body.classList.add('viz-stage-idle');
+        }, 2000);
+    }
+    function onKey(e) {
+        if (e.key === 'Escape' && overlay) close();
+    }
+    function open() {
+        if (overlay) return;
+        overlay = document.createElement('section');
+        overlay.className = 'widget visualizer-widget viz-stage-active';
+        overlay.dataset.widget = 'visualizer';
+        document.body.appendChild(overlay);
+        document.body.classList.add('viz-stage-mode');
+        cleanupWidget = WIDGET_LIBRARY.visualizer.render(overlay, 'wide');
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('keydown', onKey);
+        onMouseMove();
+    }
+    function close() {
+        if (!overlay) return;
+        try { cleanupWidget && cleanupWidget(); } catch {}
+        cleanupWidget = null;
+        overlay.remove();
+        overlay = null;
+        document.body.classList.remove('viz-stage-mode', 'viz-stage-idle');
+        if (idleTimer) clearTimeout(idleTimer);
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('keydown', onKey);
+    }
+    btn.addEventListener('click', () => overlay ? close() : open());
 }
 
 function initFullscreenButton() {

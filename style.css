@@ -207,6 +207,10 @@
 .menu-fullscreen { display: none; }
 [data-edition="zen"] .menu-fullscreen { display: flex; }
 
+/* Zen Visualizer button — Zen edition only */
+.menu-zen-viz { display: none; }
+[data-edition="zen"] .menu-zen-viz { display: flex; }
+
 /* Multi-theme seg-toggle wrapping */
 .seg-toggle-wrap { flex-wrap: wrap; gap: 2px; }
 .seg-toggle-wrap button { flex: 1 1 60px; padding: 5px 4px; font-size: 11px; }
