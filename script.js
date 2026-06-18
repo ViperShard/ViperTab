@@ -33,6 +33,10 @@ const EDITION_ID = IS_DEV_EDITION ? 'dev'
     : 'main';
 const ALL_EDITIONS = ['main', 'dev', 'student', 'zen'];
 const EDITION_LABEL = { main: 'ViperTab', dev: 'ViperTab Dev', student: 'ViperTab Student', zen: 'ViperTab Zen' };
+
+// Browser detection — Edge uses edge:// for internal pages, not chrome://
+const IS_EDGE = /Edg\//i.test(navigator.userAgent);
+const internalUrl = url => IS_EDGE ? url.replace('chrome://', 'edge://') : url;
 if (typeof document !== 'undefined') {
     document.documentElement.setAttribute('data-edition', EDITION_ID);
 }
@@ -2834,14 +2838,14 @@ function makeQuickActions() {
         { k: ['wallpaper', 'reset', 'default'], label: 'Reset wallpaper to Sequoia', tag: 'Action',
           run: async () => { applyWallpaperById('sequoia'); await setStored('vipertab.wallpaper', null); await setStored('vipertab.prefs', PREFS); } },
         { k: ['history', 'browsing'], label: 'Open browsing history', tag: 'Action',
-          run: () => chrome.tabs?.create({ url: 'chrome://history' }) },
+          run: () => chrome.tabs?.create({ url: internalUrl('chrome://history') }) },
         { k: ['downloads'], label: 'Open downloads', tag: 'Action',
-          run: () => chrome.tabs?.create({ url: 'chrome://downloads' }) },
+          run: () => chrome.tabs?.create({ url: internalUrl('chrome://downloads') }) },
         { k: ['bookmarks', 'manager'], label: 'Open bookmarks manager', tag: 'Action',
-          run: () => chrome.tabs?.create({ url: 'chrome://bookmarks' }) },
+          run: () => chrome.tabs?.create({ url: internalUrl('chrome://bookmarks') }) },
         { k: ['extensions', 'addons'], label: 'Open extensions', tag: 'Action',
-          run: () => chrome.tabs?.create({ url: 'chrome://extensions' }) },
-        { k: ['incognito', 'private', 'window'], label: 'New incognito window', tag: 'Action',
+          run: () => chrome.tabs?.create({ url: internalUrl('chrome://extensions') }) },
+        { k: ['incognito', 'inprivate', 'private', 'window'], label: IS_EDGE ? 'New InPrivate window' : 'New incognito window', tag: 'Action',
           run: () => chrome.windows?.create({ incognito: true }) },
         { k: ['settings', 'control', 'center'], label: 'Open Control Center', tag: 'Action',
           run: () => { closeSpotlight(); $('settings').hidden = false; renderDockEditor(); syncSegToggles(); renderWallpaperGrid(); renderWidgetPicker(); } },
