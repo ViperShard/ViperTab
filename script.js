@@ -2542,7 +2542,7 @@ const SLOT_NAMES = {
 };
 const DEFAULT_LAYOUT_MAIN = {
     slot1: 'clock', slot2: 'weather', slot3: 'status', slot4: 'calculator',
-    slot5: 'notes', slot6: 'recent',  slot7: 'worldclocks', slot8: 'visualizer',
+    slot5: 'search', slot6: 'recent', slot7: 'worldclocks', slot8: 'visualizer',
 };
 const DEFAULT_LAYOUT_DEV = {
     slot1: 'hackernews', slot2: 'timestamps', slot3: 'uuid', slot4: 'scratchpad',
@@ -2553,30 +2553,35 @@ const DEFAULT_LAYOUT_STUDENT = {
     slot5: 'todo', slot6: 'gpa', slot7: 'quote', slot8: 'photos',
 };
 
-// Widget pools per edition — strictly enforced. Widgets not in the current
-// edition's pool are hidden from the picker and replaced by the edition's
-// default if they appear in a saved layout.
+// Widget pools per edition — strictly enforced, no cross-edition sharing.
+// Each widget belongs to exactly one edition except the three universal
+// utility widgets (clock/weather/search) which appear where contextually
+// appropriate but never define an edition's identity.
 const WIDGET_EDITIONS = {
-    // Main / Zen general pool
-    clock:       ['main', 'zen'],
-    weather:     ['main', 'zen'],
-    status:      ['main', 'zen'],
-    notes:       ['main', 'zen'],
-    calculator:  ['main', 'zen'],
-    worldclocks: ['main', 'zen'],
-    recent:      ['main', 'zen'],
-    visualizer:  ['main', 'zen'],
-    crypto:      ['main', 'zen'],
-    quote:       ['main', 'student', 'zen'],
-    apod:        ['main', 'zen'],
-    stopwatch:   ['main', 'zen'],
-    dice:        ['main', 'zen'],
-    search:      ['main', 'zen'],
-    // Productivity essentials — also available to Student so they aren't forced
-    // to install Main for a focus timer / to-do list.
-    pomodoro:    ['main', 'student', 'zen'],
-    todo:        ['main', 'student', 'zen'],
-    // Dev specialty
+    // Main — lifestyle + information dashboard
+    clock:       ['main', 'zen'],   // zen IS a clock edition
+    weather:     ['main', 'student', 'zen'],
+    search:      ['main', 'student'],
+    status:      ['main'],
+    calculator:  ['main'],
+    worldclocks: ['main'],
+    recent:      ['main'],
+    visualizer:  ['main'],
+    crypto:      ['main'],
+    apod:        ['main'],
+    stopwatch:   ['main'],
+    dice:        ['main'],
+    // Student — academic + productivity (owns the productivity widget set)
+    notes:       ['student'],
+    todo:        ['student'],
+    pomodoro:    ['student'],
+    quote:       ['student'],
+    notebook:    ['student'],
+    schoollinks: ['student'],
+    duedates:    ['student'],
+    gpa:         ['student'],
+    photos:      ['student'],
+    // Dev — developer tools (fully exclusive)
     hackernews: ['dev'],
     regex:      ['dev'],
     json:       ['dev'],
@@ -2587,12 +2592,6 @@ const WIDGET_EDITIONS = {
     jwt:        ['dev'],
     hash:       ['dev'],
     diff:       ['dev'],
-    // Student specialty
-    notebook:    ['student'],
-    schoollinks: ['student'],
-    duedates:    ['student'],
-    gpa:         ['student'],
-    photos:      ['student'],
 };
 
 function isWidgetAllowedInEdition(widgetId, edition) {
