@@ -1,12 +1,5 @@
 // === ViperTab ===
 
-// Where to look for new versions. Host a JSON file with this shape:
-// { "version": "1.3.0", "url": "https://github.com/.../releases/latest", "notes": "What's new..." }
-// On every new tab we GET this URL; if `version` > installed manifest.version, the
-// "Update available" banner appears with a download link. Dismissing remembers the
-// version so it won't re-prompt until you bump again.
-const UPDATE_CHECK_URL = 'https://raw.githubusercontent.com/ViperShard/ViperTab/main/version.json';
-
 const $ = (id) => document.getElementById(id);
 const SS = (typeof chrome !== 'undefined' && chrome.storage?.local) || null;
 
@@ -671,18 +664,9 @@ const WIDGET_LIBRARY = {
                 ['Stay hungry, stay foolish.', 'Steve Jobs'],
                 ['What we think, we become.', 'Buddha'],
             ];
-            (async () => {
-                try {
-                    const r = await fetch('https://api.quotable.io/random?maxLength=140');
-                    const d = await r.json();
-                    text.textContent = `“${d.content}”`;
-                    author.textContent = `— ${d.author}`;
-                } catch {
-                    const q = fallback[Math.floor(Math.random() * fallback.length)];
-                    text.textContent = `“${q[0]}”`;
-                    author.textContent = `— ${q[1]}`;
-                }
-            })();
+            const q = fallback[Math.floor(Math.random() * fallback.length)];
+            text.textContent = `”${q[0]}”`;
+            author.textContent = `— ${q[1]}`;
             return () => {};
         },
     },
@@ -1312,7 +1296,10 @@ const WIDGET_LIBRARY = {
             const input = container.querySelector('.enc-input');
             const output = container.querySelector('.enc-output');
             const transforms = {
-                base64: { e: s => btoa(unescape(encodeURIComponent(s))), d: s => decodeURIComponent(escape(atob(s))) },
+                base64: {
+                    e: s => btoa(String.fromCharCode(...new TextEncoder().encode(s))),
+                    d: s => new TextDecoder().decode(new Uint8Array([...atob(s)].map(c => c.charCodeAt(0)))),
+                },
                 url: { e: encodeURIComponent, d: decodeURIComponent },
                 html: {
                     e: s => s.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]),
@@ -1488,7 +1475,7 @@ const WIDGET_LIBRARY = {
             function decode64url(s) {
                 const pad = (4 - (s.length % 4)) % 4;
                 const b64 = s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat(pad);
-                return decodeURIComponent(escape(atob(b64)));
+                return new TextDecoder().decode(new Uint8Array([...atob(b64)].map(c => c.charCodeAt(0))));
             }
             function setError(msg) {
                 output.innerHTML = '';
@@ -1998,12 +1985,12 @@ const WIDGET_LIBRARY = {
             const next = container.querySelector('.dd-next');
             const today = new Date();
             let view = new Date(today.getFullYear(), today.getMonth(), 1);
-            let events = {}; // 'YYYY-MM-DD' -> [{ text }]
-            const key = (d) => d.toISOString().slice(0, 10);
+            let dues = {}; // 'YYYY-MM-DD' -> [{ text }]
+            const key = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
             const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
             async function load() {
-                events = await getStored('vipertab.duedates', {});
+                dues = await getStored('vipertab.duedates', {});
                 render();
             }
 
@@ -2026,39 +2013,41 @@ const WIDGET_LIBRARY = {
                     const cell = document.createElement('div');
                     cell.className = 'dd-cell dd-day';
                     if (sameDay(date, today)) cell.classList.add('dd-today');
-                    if (events[k]?.length) cell.classList.add('dd-has');
+                    if (dues[k]?.length) cell.classList.add('dd-has');
                     cell.textContent = d;
-                    cell.title = (events[k] || []).map(e => e.text).join('\n') || 'Click to add an entry';
+                    cell.title = (dues[k] || []).map(e => e.text).join('\n') || 'Click to add an entry';
                     cell.addEventListener('click', async () => {
                         const text = window.prompt(`Add entry for ${date.toLocaleDateString()}:`);
                         if (text == null) return;
                         const trimmed = text.trim();
                         if (!trimmed) return;
-                        events[k] = events[k] || [];
-                        events[k].push({ text: trimmed });
-                        await setStored('vipertab.duedates', events);
+                        dues[k] = dues[k] || [];
+                        dues[k].push({ text: trimmed });
+                        await setStored('vipertab.duedates', dues);
                         render();
                     });
                     grid.appendChild(cell);
                 }
                 // Upcoming list
                 list.innerHTML = '';
-                const upcoming = Object.keys(events)
-                    .filter(k => new Date(k) >= new Date(today.toDateString()))
+                const todayKey = key(today);
+                const upcoming = Object.keys(dues)
+                    .filter(k => k >= todayKey)
                     .sort()
                     .slice(0, 6);
                 upcoming.forEach(k => {
-                    (events[k] || []).forEach((ev, i) => {
+                    (dues[k] || []).forEach((ev, i) => {
                         const li = document.createElement('div');
                         li.className = 'dd-event';
                         const dt = document.createElement('span'); dt.className = 'dd-event-date';
-                        dt.textContent = new Date(k).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        const [yr, mo, dy] = k.split('-').map(Number);
+                        dt.textContent = new Date(yr, mo - 1, dy).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                         const tx = document.createElement('span'); tx.className = 'dd-event-text'; tx.textContent = ev.text;
                         const x = document.createElement('button'); x.className = 'dd-event-x'; x.textContent = '×';
                         x.addEventListener('click', async () => {
-                            events[k].splice(i, 1);
-                            if (!events[k].length) delete events[k];
-                            await setStored('vipertab.duedates', events);
+                            dues[k].splice(i, 1);
+                            if (!dues[k].length) delete dues[k];
+                            await setStored('vipertab.duedates', dues);
                             render();
                         });
                         li.append(dt, tx, x);
@@ -2686,7 +2675,8 @@ async function renderWidgetPicker() {
     if (!grid) return;
     const layout = await getStored('vipertab.layout', { ...DEFAULT_LAYOUT });
     grid.innerHTML = '';
-    SLOTS.forEach(slotId => {
+    const pickerSlots = ACTIVE_SLOTS[EDITION_ID] || SLOTS;
+    pickerSlots.forEach(slotId => {
         const size = SLOT_SIZES[slotId];
         const current = layout[slotId] || DEFAULT_LAYOUT[slotId];
         const row = document.createElement('div');
@@ -3064,7 +3054,10 @@ function initSettings() {
 // ---------------------------------------------------------------------------
 function syncMenuLabels() {
     const t = $('theme-current');
-    if (t) t.textContent = PREFS.theme === 'glass' ? 'Glass' : PREFS.theme === 'light' ? 'Light' : 'OLED';
+    if (t) {
+        const labels = { glass: 'Glass', light: 'Light', oled: 'OLED', dev: 'Dev', 'zen-dark': 'Zen Dark', 'zen-light': 'Zen Light' };
+        t.textContent = labels[PREFS.theme] || PREFS.theme;
+    }
     const tf = $('time-current'); if (tf) tf.textContent = PREFS.timeFormat === '24' ? '24h' : '12h';
     const tu = $('temp-current'); if (tu) tu.textContent = PREFS.tempUnit === 'fahrenheit' ? '°F' : '°C';
 }
@@ -3185,129 +3178,6 @@ function aboutHTML() {
 }
 
 // ---------------------------------------------------------------------------
-// Update check + banner
-// ---------------------------------------------------------------------------
-function compareVersions(a, b) {
-    const ap = String(a).split('.').map(Number);
-    const bp = String(b).split('.').map(Number);
-    for (let i = 0; i < Math.max(ap.length, bp.length); i++) {
-        const x = ap[i] || 0, y = bp[i] || 0;
-        if (x !== y) return x - y;
-    }
-    return 0;
-}
-
-// Edition badges: short label + color identity, used on every update banner.
-const EDITION_BADGE = {
-    main:    { label: 'Default' },
-    dev:     { label: 'Dev'     },
-    student: { label: 'Student' },
-    zen:     { label: 'Zen'     },
-};
-
-async function checkForUpdates() {
-    if (!UPDATE_CHECK_URL) return;
-    try {
-        const r = await fetch(`${UPDATE_CHECK_URL}?t=${Date.now()}`, { cache: 'no-store' });
-        if (!r.ok) return;
-        const remote = await r.json();
-        if (!remote) return;
-
-        const myEdition = EDITION_ID;
-        const installed = chrome.runtime?.getManifest?.()?.version || '0.0.0';
-
-        const editions = remote.editions || {
-            main:    { version: remote.version, url: remote.url, notes: remote.notes },
-            dev:     { version: remote.version, url: remote.url, notes: remote.notes },
-            student: { version: remote.version, url: remote.url, notes: remote.notes },
-            zen:     { version: remote.version, url: remote.url, notes: remote.notes },
-        };
-
-        // Reset the stack on each check so we never have stale entries.
-        const stack = $('update-banner-stack');
-        if (stack) stack.innerHTML = '';
-
-        // Primary banner FIRST (own edition update) — sticks at top of stack.
-        const myInfo = editions[myEdition];
-        if (myInfo?.version && compareVersions(myInfo.version, installed) > 0) {
-            const dismissed = await getStored(`vipertab.dismissed.${myEdition}`);
-            if (myInfo.version !== dismissed) {
-                showUpdateBanner({
-                    edition: myEdition,
-                    secondary: false,
-                    title: `${EDITION_LABEL[myEdition]} v${myInfo.version} available`,
-                    linkText: 'Download',
-                    url: myInfo.url || remote.url,
-                    notes: myInfo.notes,
-                    dismissKey: `vipertab.dismissed.${myEdition}`,
-                    dismissValue: myInfo.version,
-                });
-            }
-        }
-
-        // Secondary banners for ALL other editions with un-dismissed updates —
-        // each gets its own row with its own dismiss button.
-        for (const otherEdition of ALL_EDITIONS) {
-            if (otherEdition === myEdition) continue;
-            const otherInfo = editions[otherEdition];
-            if (!otherInfo?.version) continue;
-            const dismissed = await getStored(`vipertab.dismissed.${otherEdition}`);
-            if (otherInfo.version === dismissed) continue;
-            showUpdateBanner({
-                edition: otherEdition,
-                secondary: true,
-                title: `${EDITION_LABEL[otherEdition]} v${otherInfo.version} just dropped`,
-                linkText: 'Try it',
-                url: otherInfo.url || remote.url,
-                notes: otherInfo.notes,
-                dismissKey: `vipertab.dismissed.${otherEdition}`,
-                dismissValue: otherInfo.version,
-            });
-        }
-    } catch { /* offline / repo not set up yet */ }
-}
-
-function showUpdateBanner(opts) {
-    const stack = $('update-banner-stack');
-    if (!stack) return;
-
-    const banner = document.createElement('div');
-    banner.className = 'update-banner' + (opts.secondary ? ' secondary' : '');
-    if (opts.edition) banner.dataset.badgeEdition = opts.edition;
-
-    const badge = document.createElement('span');
-    badge.className = 'badge';
-    const meta = EDITION_BADGE[opts.edition];
-    badge.textContent = (meta?.label || 'Update').toUpperCase();
-
-    const msg = document.createElement('span');
-    msg.className = 'upd-msg';
-    msg.textContent = opts.title;
-
-    const link = document.createElement('a');
-    link.className = 'upd-link';
-    link.href = opts.url || '#';
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.textContent = (opts.linkText || 'Download') + ' →';
-    if (opts.notes) link.title = opts.notes;
-
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'upd-close';
-    closeBtn.title = 'Dismiss';
-    closeBtn.textContent = '×';
-    closeBtn.addEventListener('click', async () => {
-        banner.remove();
-        if (opts.dismissKey && opts.dismissValue) {
-            await setStored(opts.dismissKey, opts.dismissValue);
-        }
-    });
-
-    banner.append(badge, msg, link, closeBtn);
-    stack.appendChild(banner);
-}
-
-// ---------------------------------------------------------------------------
 // Global keys
 // ---------------------------------------------------------------------------
 function initGlobalKeys() {
@@ -3335,6 +3205,12 @@ function initGlobalKeys() {
 async function boot() {
     const savedPrefs = await getStored('vipertab.prefs');
     if (savedPrefs) Object.assign(PREFS, savedPrefs);
+
+    const versionEl = $('footer-version');
+    if (versionEl) {
+        const mver = (typeof chrome !== 'undefined' && chrome.runtime?.getManifest?.()?.version) || '';
+        versionEl.textContent = EDITION_LABEL[EDITION_ID] + (mver ? ` v${mver}` : '');
+    }
 
     // One-time migration: dev-edition installs that predate the terminal theme
     // landed on `glass`. Bump them to the new `dev` theme so the rebuild is visible.
@@ -3368,7 +3244,6 @@ async function boot() {
     if (IS_ZEN_EDITION) initFullscreenButton();
     if (IS_ZEN_EDITION) initZenVisualizer();
 
-    checkForUpdates();
 }
 
 // ---------------------------------------------------------------------------
