@@ -209,7 +209,6 @@ for ed in "${ALL_EDITIONS[@]}"; do
     [[ -n "${BUMP_SET[$ed]:-}" ]] && star=" (bumped)"
     printf "  %-8s v%s%s\n" "$ed" "${NEW[$ed]}" "$star"
 done
-echo "  Banner will fire on installed copies within seconds."
 echo ""
 echo "  ViperTab:         $MAIN_ZIP_URL"
 echo "  ViperTab Dev:     $DEV_ZIP_URL"
