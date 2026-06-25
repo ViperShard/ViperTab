@@ -1,27 +1,27 @@
 {
-  "version": "1.4.12",
+  "version": "1.4.13",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Zen Visualizer: giant centered start button so the tab-share picker actually opens\n",
+  "notes": "Launch prep: bug fixes, Edge compatibility, removed update banners\n",
   "editions": {
     "main": {
-      "version": "1.4.12",
+      "version": "1.4.13",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Zen Visualizer: giant centered start button so the tab-share picker actually opens\n"
+      "notes": "Launch prep: bug fixes, Edge compatibility, removed update banners\n"
     },
     "dev": {
-      "version": "1.4.9",
+      "version": "1.4.10",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Zen Visualizer: giant centered start button so the tab-share picker actually opens\n"
+      "notes": "Launch prep: bug fixes, Edge compatibility, removed update banners\n"
     },
     "student": {
-      "version": "1.0.8",
+      "version": "1.0.9",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip",
-      "notes": "Zen Visualizer: giant centered start button so the tab-share picker actually opens\n"
+      "notes": "Launch prep: bug fixes, Edge compatibility, removed update banners\n"
     },
     "zen": {
-      "version": "1.0.14",
+      "version": "1.0.15",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip",
-      "notes": "Zen Visualizer: giant centered start button so the tab-share picker actually opens\n"
+      "notes": "Launch prep: bug fixes, Edge compatibility, removed update banners\n"
     }
   }
 }
