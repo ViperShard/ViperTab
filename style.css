@@ -1223,23 +1223,26 @@ body.viz-stage-mode.viz-stage-idle .visualizer-widget.viz-stage-active .viz-stat
     align-items: center;
     position: relative;
 }
+.viz-main {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    min-height: 0;
+}
 .viz-settings-panel {
-    position: absolute;
-    top: calc(100% + 10px);
-    right: 0;
-    z-index: 252;
-    width: 260px;
-    padding: 14px;
+    width: 220px;
+    flex-shrink: 0;
+    padding: 12px;
     display: flex;
     flex-direction: column;
     gap: 12px;
     background: var(--glass-bg-strong);
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
     border: 1px solid var(--glass-border-soft);
     border-radius: 14px;
     color: var(--text);
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
+    overflow-y: auto;
     text-transform: none;
     letter-spacing: 0;
     font-weight: 500;
@@ -1331,7 +1334,7 @@ body.viz-stage-mode.viz-stage-idle .visualizer-widget.viz-stage-active .viz-stat
 }
 .viz-canvas {
     flex: 1;
-    width: 100%;
+    min-width: 0;
     min-height: 0;
     background: var(--canvas-bg);
     border: 1px solid var(--canvas-border);

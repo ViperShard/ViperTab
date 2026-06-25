@@ -960,40 +960,42 @@ const WIDGET_LIBRARY = {
                         <button class="viz-btn viz-toggle" title="Capture audio">
                             <svg class="viz-icon" width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
                         </button>
-                        <div class="viz-settings-panel" hidden>
-                            <div class="viz-set-row">
-                                <label>Style</label>
-                                <div class="viz-seg" data-key="vizType">
-                                    <button data-val="bars">Bars</button>
-                                    <button data-val="mirror">Mirror</button>
-                                    <button data-val="wave">Wave</button>
-                                    <button data-val="circle">Circle</button>
-                                </div>
+                    </div>
+                </div>
+                <div class="viz-main">
+                    <canvas class="viz-canvas"></canvas>
+                    <div class="viz-settings-panel" hidden>
+                        <div class="viz-set-row">
+                            <label>Style</label>
+                            <div class="viz-seg" data-key="vizType">
+                                <button data-val="bars">Bars</button>
+                                <button data-val="mirror">Mirror</button>
+                                <button data-val="wave">Wave</button>
+                                <button data-val="circle">Circle</button>
                             </div>
-                            <div class="viz-set-row">
-                                <label>Palette</label>
-                                <div class="viz-seg viz-seg-grid" data-key="vizPalette">
-                                    <button data-val="smart">Smart</button>
-                                    <button data-val="aurora">Aurora</button>
-                                    <button data-val="ocean">Ocean</button>
-                                    <button data-val="fire">Fire</button>
-                                    <button data-val="forest">Forest</button>
-                                    <button data-val="rainbow">Rainbow</button>
-                                    <button data-val="mono">Mono</button>
-                                </div>
+                        </div>
+                        <div class="viz-set-row">
+                            <label>Palette</label>
+                            <div class="viz-seg viz-seg-grid" data-key="vizPalette">
+                                <button data-val="smart">Smart</button>
+                                <button data-val="aurora">Aurora</button>
+                                <button data-val="ocean">Ocean</button>
+                                <button data-val="fire">Fire</button>
+                                <button data-val="forest">Forest</button>
+                                <button data-val="rainbow">Rainbow</button>
+                                <button data-val="mono">Mono</button>
                             </div>
-                            <div class="viz-set-row">
-                                <div class="viz-set-head"><label>Sensitivity</label><span class="viz-set-val" data-show="vizGain">1.0×</span></div>
-                                <input type="range" min="0.5" max="3" step="0.1" data-key="vizGain">
-                            </div>
-                            <div class="viz-set-row">
-                                <div class="viz-set-head"><label>Smoothing</label><span class="viz-set-val" data-show="vizSmoothing">0.78</span></div>
-                                <input type="range" min="0" max="0.95" step="0.05" data-key="vizSmoothing">
-                            </div>
+                        </div>
+                        <div class="viz-set-row">
+                            <div class="viz-set-head"><label>Sensitivity</label><span class="viz-set-val" data-show="vizGain">1.0×</span></div>
+                            <input type="range" min="0.5" max="3" step="0.1" data-key="vizGain">
+                        </div>
+                        <div class="viz-set-row">
+                            <div class="viz-set-head"><label>Smoothing</label><span class="viz-set-val" data-show="vizSmoothing">0.78</span></div>
+                            <input type="range" min="0" max="0.95" step="0.05" data-key="vizSmoothing">
                         </div>
                     </div>
                 </div>
-                <canvas class="viz-canvas"></canvas>
                 <div class="viz-status">Pick a tab and check "Share audio"</div>`;
             const canvas = container.querySelector('.viz-canvas');
             const status = container.querySelector('.viz-status');
