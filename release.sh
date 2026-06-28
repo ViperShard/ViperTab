@@ -162,19 +162,19 @@ zip -r ViperTab.zip manifest.json newtab.html style.css script.js README.md vers
 # Dev
 build_zip_with_patched_manifest "ViperTabDev.zip" \
     "ViperTab Dev" \
-    "ViperTab — Dev edition. Multi-tab scratchpad code editor, JWT decoder, hash generator (SHA-1/256/384/512), line-by-line diff viewer, regex tester, JSON formatter, encoders, timestamps, UUID, and Hacker News. Terminal/btop aesthetic." \
+    "Developer new tab. JWT decoder, hash generator, regex, JSON formatter, diff viewer, UUID, and Hacker News. Terminal aesthetic." \
     "${NEW[dev]}"
 
 # Student
 build_zip_with_patched_manifest "ViperTabStudent.zip" \
     "ViperTab Student" \
-    "ViperTab — Student edition. Markdown notebook with disk-save, school quick-links, due dates calendar, GPA calculator, citation generator, flashcards, and the rest of the home pack — built for high-school workflows." \
+    "Student new tab page. Markdown notebook, school links, due dates calendar, GPA calculator, Pixabay search, Pomodoro timer and todo." \
     "${NEW[student]}"
 
 # Zen
 build_zip_with_patched_manifest "ViperTabZen.zip" \
     "ViperTab Zen" \
-    "ViperTab — Zen edition. A minimalist new tab page. Big centered digital clock, auto-hiding menu bar and dock, black/white/gold palette with a customizable accent color." \
+    "Minimalist new tab page. Giant centered clock, auto-hiding UI, black/white/gold palette with a customizable accent color." \
     "${NEW[zen]}"
 
 # ---------- 4. Determine git tag ----------
