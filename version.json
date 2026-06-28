@@ -1,27 +1,27 @@
 {
-  "version": "1.4.15",
+  "version": "1.4.16",
   "url": "https://vipershard.github.io/ViperTab/",
-  "notes": "Strict per-edition widget pools, official logo, Edge store ready\n",
+  "notes": "Fix Edge store description length\n",
   "editions": {
     "main": {
-      "version": "1.4.15",
+      "version": "1.4.16",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTab.zip",
-      "notes": "Strict per-edition widget pools, official logo, Edge store ready\n"
+      "notes": "Fix Edge store description length\n"
     },
     "dev": {
-      "version": "1.4.12",
+      "version": "1.4.13",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabDev.zip",
-      "notes": "Strict per-edition widget pools, official logo, Edge store ready\n"
+      "notes": "Fix Edge store description length\n"
     },
     "student": {
-      "version": "1.0.11",
+      "version": "1.0.12",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabStudent.zip",
-      "notes": "Strict per-edition widget pools, official logo, Edge store ready\n"
+      "notes": "Fix Edge store description length\n"
     },
     "zen": {
-      "version": "1.0.17",
+      "version": "1.0.18",
       "url": "https://github.com/ViperShard/ViperTab/releases/latest/download/ViperTabZen.zip",
-      "notes": "Strict per-edition widget pools, official logo, Edge store ready\n"
+      "notes": "Fix Edge store description length\n"
     }
   }
 }
