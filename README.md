@@ -6,7 +6,7 @@
 
 A macOS-inspired new tab page for Chrome, Edge, Brave, Opera, and other Chromium-based browsers — glass-themed UI, helpful widgets, an editable dock, and a `/`-key Spotlight that searches the web, your bookmarks, and your open tabs. Part of the ViperShard family.
 
-**[→ Download &amp; install](https://vipershard.github.io/ViperTab/)** · [Latest release](https://github.com/ViperShard/ViperTab/releases/latest) · [All versions](https://github.com/ViperShard/ViperTab/releases)
+**[→ Download &amp; install](https://nyfeblade.github.io/ViperTab/)** · [Latest release](https://github.com/ViperShard/ViperTab/releases/latest) · [All versions](https://github.com/ViperShard/ViperTab/releases)
 
 ## Features
 
